@@ -245,8 +245,6 @@ bool fetchData() {
         cal.daysCount = k; // optional: store how many days were actually read
     }
 
-    return true;
-
     // ------------------ Weather parsing ------------------
     if (doc["weather"].is<JsonArray>()) {
         weather.count = 0;
@@ -283,6 +281,7 @@ bool fetchData() {
         saveMakerWorld(); 
     }
     saveLayout();
+    return true;
 }
 
 
