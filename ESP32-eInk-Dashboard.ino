@@ -890,79 +890,68 @@ void drawStatus(LayoutItem* item) {
   char buf[20] = "";
   if (hasBatteryPin()) {
     voltage = readBattery();
-    Serial.println(voltage);
     snprintf(buf, sizeof(buf), "%.2f V", voltage);
   }
 
   char versionBuf[32];
   snprintf(versionBuf, sizeof(versionBuf), "v%s", FW_VERSION);
-  
+
   display.fillRect(item->PosX, item->PosY, item->Width, item->Height, GxEPD_WHITE);
 
   if (hasBatteryPin()) {
     drawSparseString(&epaperFont, item->PosX, item->PosY + 16, buf, GxEPD_BLACK);
   }
 
-  int16_t versionWidth = getSparseStringWidth(&epaperFont, versionBuf);
-  int16_t rightPadding = 6;
-  int16_t iconReserve = rightPadding;
-  if (hasBatteryPin()) {
-    iconReserve += 18;
-  }
+  // Icons are drawn right-to-left in fixed 22px slots so they never overlap
+  // regardless of which subset is active.
+  constexpr int16_t ICON_STEP = 22;
+  constexpr int16_t RIGHT_PAD = 4;
+
+  int16_t iconReserve = RIGHT_PAD;
+  if (hasBatteryPin())                  iconReserve += ICON_STEP;
 #if USE_ZIGBEE
-  if (zigbee_enable) {
-    iconReserve += 42;
-  }
+  if (zigbee_enable)                    iconReserve += ICON_STEP * 2;
 #endif
-  if (isPrinting || previousIsPrinting) {
-    iconReserve += 28;
-  }
+  if (isPrinting || previousIsPrinting) iconReserve += ICON_STEP;
+  if (pendingApiRetry)                  iconReserve += ICON_STEP;
+
+  int16_t versionWidth = getSparseStringWidth(&epaperFont, versionBuf);
   int16_t versionX = item->PosX + item->Width - iconReserve - versionWidth;
   int16_t minVersionX = item->PosX + (hasBatteryPin() ? getSparseStringWidth(&epaperFont, buf) + 8 : 0);
-  if (versionX < minVersionX) {
-    versionX = minVersionX;
-  }
+  if (versionX < minVersionX) versionX = minVersionX;
   drawSparseString(&epaperFont, versionX, item->PosY + 16, versionBuf, GxEPD_BLACK);
+
+  // Draw icons right to left
+  int16_t ix = item->PosX + item->Width - RIGHT_PAD;
 
   if (hasBatteryPin()) {
     float percentage = constrain((voltage - BAT_MIN_V) / (BAT_MAX_V - BAT_MIN_V) * 100.0f, 0, 100);
-
-    // Serial.println(percentage);
-
-    unsigned int startChar = 983162;  // empty
-    unsigned int endChar = 983170;    // full
-
-    unsigned int numSteps = endChar - startChar;  // 11 steps
-                                                  // Clamp percentage 0–100
-    if (percentage > 100.0f) percentage = 100.0f;
-    if (percentage < 0.0f) percentage = 0.0f;
-
+    unsigned int startChar = 983162;
+    unsigned int endChar   = 983170;
+    unsigned int numSteps  = endChar - startChar;
     unsigned int charCode;
-
-    if (percentage < 10.0f) {
-      charCode = startChar;  // <10%
-    } else if (percentage > 90.0f) {
-      charCode = 983161;  // <10%
-    } else {
-
-      // Map 10–100% linearly to remaining steps
-      charCode = startChar + ((percentage - 10.0f) * numSteps / 90.0f) + 1;
-    }
-
-    drawSparseChar(&MDI_22_Sparse, item->PosX + item->Width - 18, item->PosY + 16, charCode, GxEPD_BLACK);
+    if (percentage < 10.0f)      charCode = startChar;
+    else if (percentage > 90.0f) charCode = 983161;
+    else                         charCode = startChar + (unsigned int)((percentage - 10.0f) * numSteps / 90.0f) + 1;
+    ix -= ICON_STEP;
+    drawSparseChar(&MDI_22_Sparse, ix, item->PosY + 16, charCode, GxEPD_BLACK);
   }
 #if USE_ZIGBEE
   if (zigbee_enable) {
-    drawSparseChar(&MDI_22_Sparse, item->PosX + item->Width - 54, item->PosY + 16,
-                   MDI_ZIGBEE, GxEPD_BLACK);
-    uint32_t zigbeeIcon = zigbee_linked ? (s_light_state ? MDI_POWER_ON : MDI_POWER_OFF) : MDI_ALERT;
-    drawSparseChar(&MDI_22_Sparse, item->PosX + item->Width - 36, item->PosY + 16,
-                   zigbeeIcon, GxEPD_BLACK);
+    uint32_t zigbeeStateIcon = zigbee_linked ? (s_light_state ? MDI_POWER_ON : MDI_POWER_OFF) : MDI_ALERT;
+    ix -= ICON_STEP;
+    drawSparseChar(&MDI_22_Sparse, ix, item->PosY + 16, zigbeeStateIcon, GxEPD_BLACK);
+    ix -= ICON_STEP;
+    drawSparseChar(&MDI_22_Sparse, ix, item->PosY + 16, MDI_ZIGBEE, GxEPD_BLACK);
   }
 #endif
   if (isPrinting || previousIsPrinting) {
-    drawSparseChar(&MDI_22_Sparse, item->PosX + item->Width - 72, item->PosY + 16,
-                   MDI_PRINT_ON, GxEPD_BLACK);
+    ix -= ICON_STEP;
+    drawSparseChar(&MDI_22_Sparse, ix, item->PosY + 16, MDI_PRINT_ON, GxEPD_BLACK);
+  }
+  if (pendingApiRetry) {
+    ix -= ICON_STEP;
+    drawSparseChar(&MDI_22_Sparse, ix, item->PosY + 16, MDI_ALERT, GxEPD_BLACK);
   }
 
   if (apiRetryStreak >= API_RETRY_DISPLAY_THRESHOLD) {
