@@ -56,6 +56,6 @@ struct PrinterStatus {
 extern RTC_DATA_ATTR bool isPrinting;
 extern RTC_DATA_ATTR bool previousIsPrinting;
 
-void fetchBambu(  LayoutItem*  );
+bool fetchBambu(  LayoutItem*  );
 void bambuWidget(LayoutItem* );
 bool isAuxFanOn();

@@ -219,22 +219,20 @@ void bambuWidget(LayoutItem* item)
 
       int j = 0;
       for (; j < printer.ams[i].trayCount; j++) {
+        Tray& tray = printer.ams[i].trays[j];
 
         drawSparseChar(&MDI_22_Sparse, item->PosX+item->ColWidth*j+150, y+4, MDI_SPOOL, GxEPD_BLACK);
         sprintf(buf, "%d", j+1);  
         drawSparseStringCentered(&epaperFont, item->PosX+item->ColWidth*j+160, y-1, buf,GxEPD_BLACK );
      
-        if( printer.ams[i].trays[j].state != 11)
-            drawSparseStringCentered(&epaperFont, item->PosX+item->ColWidth*j+160, y+item->RowHeight, "EMPTY",GxEPD_BLACK );
-        else
-          if( printer.ams[i].trays[j].remain!=-1 )
-          {
-            sprintf(buf, "%d%%", printer.ams[i].trays[j].remain);  
-            drawSparseStringCentered(&epaperFont, item->PosX+item->ColWidth*j+160, y+item->RowHeight, buf,GxEPD_BLACK );
-          }
-          else {
-            drawSparseStringCentered(&epaperFont, item->PosX+item->ColWidth*j+160, y+item->RowHeight, printer.ams[i].trays[j].tray_type,GxEPD_BLACK );
-          }
+        if (tray.remain >= 0) {
+          sprintf(buf, "%d%%", tray.remain);
+          drawSparseStringCentered(&epaperFont, item->PosX+item->ColWidth*j+160, y+item->RowHeight, buf, GxEPD_BLACK);
+        } else if (tray.tray_type[0] != '\0') {
+          drawSparseStringCentered(&epaperFont, item->PosX+item->ColWidth*j+160, y+item->RowHeight, "--", GxEPD_BLACK);
+        } else {
+          drawSparseStringCentered(&epaperFont, item->PosX+item->ColWidth*j+160, y+item->RowHeight, "EMPTY", GxEPD_BLACK);
+        }
       }
     }
   }
@@ -261,16 +259,15 @@ static void connectMqtt( LayoutItem * infoBambu) {
 
 }
 
-void fetchBambu(  LayoutItem* infoBambu  )
+bool fetchBambu(  LayoutItem* infoBambu  )
 {
   DBG( F("[Bambu] Fetching"));
     DBGF("[Bambu] MQTT Pass %s MQTT_SN %s MQTT_IP %s MQTT_PORT %d", mqtt_pass, mqtt_sn, mqtt_ip, mqtt_port );
 
-  // This will create a widget strange, I need to return something
   if (mqtt_pass[0] == '\0' || mqtt_sn[0] == '\0' || mqtt_ip[0] == '\0' || mqtt_port == 0)
   {
     DBG("[Bambu]: Missing some parametes such pass, sn, ip or port");
-    return;
+    return false;
   }
 
   previousIsPrinting=isPrinting;
@@ -281,14 +278,21 @@ void fetchBambu(  LayoutItem* infoBambu  )
   client.setServer(mqtt_ip, mqtt_port);
   client.setCallback(callback);
   connectMqtt( infoBambu );
-  unsigned long start = millis();
-  while ( millis() - start < 3000) {  // wait up to 4 seconds
-    client.loop();
-    delay(10);
+
+  bool connected = client.connected();
+  if (connected) {
+    unsigned long start = millis();
+    while ( millis() - start < 3000) {  // wait up to 4 seconds
+      client.loop();
+      delay(10);
+    }
+  } else {
+    DBG(F("[Bambu]: MQTT never connected, skipping loop"));
   }
 
   client.disconnect();   // <-- CLOSE MQTT connection
   wifiClient.stop();
+  return connected;
 }
 
 bool isAuxFanOn() {

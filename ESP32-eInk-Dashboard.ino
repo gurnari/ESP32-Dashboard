@@ -66,6 +66,8 @@ RTC_DATA_ATTR uint16_t bootCount = 0;
 RTC_DATA_ATTR bool lastPrint = false;
 RTC_DATA_ATTR bool pendingApiRetry = false;
 RTC_DATA_ATTR uint8_t apiRetryStreak = 0;
+RTC_DATA_ATTR bool pendingProxmoxRetry = false;
+RTC_DATA_ATTR bool pendingBambuRetry = false;
 
 constexpr uint8_t API_RETRY_DISPLAY_THRESHOLD = 10;
 
@@ -200,6 +202,40 @@ void flashSuperMiniStatusLed(uint8_t red, uint8_t green, uint8_t blue, uint8_t f
     if (i + 1 < flashes) {
       delay(offMs);
     }
+  }
+}
+
+void setSuperMiniStatusLed(uint8_t red, uint8_t green, uint8_t blue) {
+  if (activePinPreset != PinPreset::Esp32C6SuperMini) return;
+  rgbLedWrite(8, red, green, blue);
+}
+
+void updateSuperMiniHoldFeedback(unsigned long heldMs) {
+  if (activePinPreset != PinPreset::Esp32C6SuperMini) return;
+
+  if (heldMs < BUTTON_HOLD_MS) {
+    // Green stays on while the button is being held.
+    setSuperMiniStatusLed(0, 48, 0);
+    return;
+  }
+
+  if (heldMs < BUTTON_LONG_HOLD_MS) {
+    // After demo threshold, flash by adding blue to the green base -> cyan.
+    const unsigned long phase = (heldMs - BUTTON_HOLD_MS) % 320UL;
+    if (phase < 120UL) {
+      setSuperMiniStatusLed(0, 48, 48);
+    } else {
+      setSuperMiniStatusLed(0, 48, 0);
+    }
+    return;
+  }
+
+  // After config threshold, flash by adding red as well -> white.
+  const unsigned long phase = (heldMs - BUTTON_LONG_HOLD_MS) % 180UL;
+  if (phase < 110UL) {
+    setSuperMiniStatusLed(48, 48, 48);
+  } else {
+    setSuperMiniStatusLed(0, 48, 0);
   }
 }
 
@@ -868,12 +904,18 @@ void drawStatus(LayoutItem* item) {
   }
 
   int16_t versionWidth = getSparseStringWidth(&epaperFont, versionBuf);
-  int16_t iconReserve = 24;
+  int16_t rightPadding = 6;
+  int16_t iconReserve = rightPadding;
+  if (hasBatteryPin()) {
+    iconReserve += 18;
+  }
 #if USE_ZIGBEE
-  iconReserve += 40;
+  if (zigbee_enable) {
+    iconReserve += 42;
+  }
 #endif
   if (isPrinting || previousIsPrinting) {
-    iconReserve += 20;
+    iconReserve += 28;
   }
   int16_t versionX = item->PosX + item->Width - iconReserve - versionWidth;
   int16_t minVersionX = item->PosX + (hasBatteryPin() ? getSparseStringWidth(&epaperFont, buf) + 8 : 0);
@@ -1169,7 +1211,7 @@ void startAP() {
   } while (display.nextPage());
 
   DBG(F("Display configured"));
-  display.powerOff();
+  display.hibernate();
 }
 
 // Should serparate it in order to force also reading the layout
@@ -1223,6 +1265,7 @@ void drawDemoScreen() {
     drawSparseStringCentered(&epaperFont, 400, 470, "Hold 4s on wake for AP config", GxEPD_BLACK);
   } while (display.nextPage());
 
+  display.hibernate();
   forceRefreshAfterDemo = true;
 
   // Serial.println("Demo Mode drawn. Holding for 3 seconds...");
@@ -1246,15 +1289,21 @@ int readWakeButtonAction() {
   unsigned long pressStart = millis();
   while (digitalRead(activePins.demoButton) == HIGH) {
     unsigned long heldMs = millis() - pressStart;
+    updateSuperMiniHoldFeedback(heldMs);
     if (heldMs >= BUTTON_LONG_HOLD_MS) {
       Serial.println("Button held -> AP config mode");
+      forceSuperMiniLedsOff();
+      flashSuperMiniStatusLed(48, 0, 0, 2, 90, 70);
       return BUTTON_ACTION_AP;
     }
     delay(10);
   }
 
+  forceSuperMiniLedsOff();
+
   if (millis() - pressStart >= BUTTON_HOLD_MS) {
     Serial.println("Button held -> Demo mode");
+    flashSuperMiniStatusLed(0, 48, 0, 2, 100, 70);
     return BUTTON_ACTION_DEMO;
   }
   return BUTTON_ACTION_NONE;
@@ -1497,10 +1546,10 @@ void setup() {
   bool stocksIf = shouldFetchRefresh(infoStocks);
   bool openMeteoIf = shouldFetchRefresh(infoOpenMeteo);
   bool trackingIf = shouldFetchRefresh(infoTracking);
-  bool proxmoxIf = shouldFetchRefresh(infoProxMox);
+  bool proxmoxIf = shouldFetchRefresh(infoProxMox) || pendingProxmoxRetry;
   bool batteryIf = shouldFetchRefresh(infoBattery);
   bool calendarIf = shouldFetchRefresh(infoCalendar);
-  bool bambuIf = infoBambu && infoBambu->Active && (((isPrinting || previousIsPrinting) && (bootCount % infoBambu->Refresh == 0)) || (bootCount % (infoBambu->Refresh * 2) == 0));
+  bool bambuIf = (infoBambu && infoBambu->Active && (((isPrinting || previousIsPrinting) && (bootCount % infoBambu->Refresh == 0)) || (bootCount % (infoBambu->Refresh * 2) == 0))) || pendingBambuRetry;
 
   // Bring Wi-Fi up only when at least one widget needs fresh data.
   bool needWiFi =
@@ -1551,20 +1600,28 @@ void setup() {
         }
       }
 
-      if (bambuIf) 
+      if (bambuIf)
       {
-        fetchBambu(infoBambu);
+        bool bambuOk = fetchBambu(infoBambu);
+        pendingBambuRetry = !bambuOk;
         signalPrintTransition();
+        forceUpdateStatusBar = true;
       }
 
-      if (proxmoxIf) 
-        fetchProxmoxStates(infoProxMox, 3);
+      if (proxmoxIf) {
+        bool proxOk = fetchProxmoxStates(infoProxMox, 3);
+        pendingProxmoxRetry = !proxOk;
+      }
 
     } else {
       DBG("WiFi FAILED → using cached data");
-      if (!hasStoredData || stocksIf || trackingIf || pendingApiRetry) {
-        pendingApiRetry = true;
-        if (apiRetryStreak < 255) apiRetryStreak++;
+      if (needWiFi) {
+        if (!hasStoredData || stocksIf || trackingIf || pendingApiRetry) {
+          pendingApiRetry = true;
+          if (apiRetryStreak < 255) apiRetryStreak++;
+        }
+        if (proxmoxIf) pendingProxmoxRetry = true;
+        if (bambuIf)   pendingBambuRetry   = true;
       }
     }
     WiFi.disconnect(true);
@@ -1699,7 +1756,15 @@ if (getLocalTime(&timeinfo))
 else
   DBG(F("NTP not synced, sleeping 60s"));
 
-  // display.hibernate();
+  // hibernate() clears the controller's internal frame buffer used for partial refresh XOR.
+  // Only use it when the next boot will be a full refresh (controller RAM is reloaded anyway).
+  // For partial-refresh boots, powerOff() keeps the controller RAM intact.
+  bool nextBootIsFullRefresh = ((bootCount + 1) % (60 * 24) == 0);
+  if (nextBootIsFullRefresh) {
+    display.hibernate();
+  } else {
+    display.powerOff();
+  }
 
   if (hasDisplayPowerPin()) {
     gpio_hold_en((gpio_num_t)activePins.displayPower);

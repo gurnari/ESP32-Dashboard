@@ -9,7 +9,7 @@
 std::vector<ProxmoxHost> hostsInfo;
 int proxmoxNodesCount = 0;
 
-void fetchProxmoxStates(LayoutItem* item, int maxRetries = 3) {
+bool fetchProxmoxStates(LayoutItem* item, int maxRetries = 3) {
     DBG(F("[Proxmox]: Fetching Proxmox"));
 
     hostsInfo.clear();
@@ -89,6 +89,7 @@ void fetchProxmoxStates(LayoutItem* item, int maxRetries = 3) {
     }
 
     DBG(F("[Proxmox]: ProxMox: Fetching Done") );
+    return success;
 }
 
 void proxmoxWidget(LayoutItem* item)

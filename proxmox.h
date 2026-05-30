@@ -20,5 +20,5 @@ struct ProxmoxHost {
   }
 };
 
-void fetchProxmoxStates(LayoutItem* , int );
+bool fetchProxmoxStates(LayoutItem* , int );
 void proxmoxWidget(LayoutItem* );
