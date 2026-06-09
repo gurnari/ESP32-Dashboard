@@ -117,22 +117,22 @@ jobs:
           arduino-cli compile \
             --fqbn ${{ matrix.fqbn }} \
             --board-options ${{ matrix.board-options }} \
-            --build-property "build.custom_partitions=$GITHUB_WORKSPACE/partitions.csv" \
+            --build-property "build.custom_partitions=$GITHUB_WORKSPACE/firmware/partitions.csv" \
             --build-property "upload.maximum_size=3604480" \
             --build-property "compiler.cpp.extra_flags=${{ matrix.extra-cpp-flags }} -DFW_VERSION=\"$VERSION\"" \
             --export-binaries \
             --output-dir ${{ matrix.build-dir }} \
-            ./ESP32-eInk-Dashboard.ino
+            ./firmware/firmware.ino
 
       # ------------------------------
       # Rename firmware to clean names
       # ------------------------------
       - name: Rename firmware
         run: |
-          mkdir -p firmware
-          cp ${{ matrix.build-dir }}/*.bin firmware/
+          mkdir -p dist
+          cp ${{ matrix.build-dir }}/*.bin dist/
 
-          cd firmware
+          cd dist
           for f in *.bin; do
             mv "$f" "${{ matrix.name }}-$f"
           done
@@ -144,7 +144,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}-Firmware
-          path: firmware
+          path: dist
           retention-days: 365
 
   # --------------------------------------------------
@@ -161,11 +161,11 @@ jobs:
       - name: Download all firmware artifacts
         uses: actions/download-artifact@v4
         with:
-          path: firmware
+          path: dist
 
       - name: Create release and upload firmware
         uses: softprops/action-gh-release@v2
         with:
           tag_name: firmware-${{ github.event.inputs.version }}
           name: ESP32 Firmware Build ${{ github.event.inputs.version }}
-          files: firmware/**/*.bin
+          files: dist/**/*.bin
