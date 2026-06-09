@@ -1,0 +1,102 @@
+# ===========================================================================
+#  Dashboard e-paper ESP32 — .gitignore (monorepo : /firmware + /pi-aggregator)
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+#  SECRETS & CONFIG LOCALE  (le plus important — ne JAMAIS committer)
+#  WiFi, clés API (Last.fm, météo), code d'accès Bambu Lab, IP du Pi, etc.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+*.env
+secrets.h
+secrets.json
+arduino_secrets.h
+config.local.h
+config.local.*
+credentials.json
+*.key
+*.pem
+
+# ---------------------------------------------------------------------------
+#  FIRMWARE — Arduino / arduino-cli
+# ---------------------------------------------------------------------------
+firmware/build/
+build/
+.build/
+.cache/
+*.bin
+*.elf
+*.hex
+*.map
+*.d
+*.o
+*.a
+
+# PlatformIO (si jamais utilisé à la place / en plus d'arduino-cli)
+.pio/
+.pioenvs/
+.piolibdeps/
+.clang_complete
+.gcc-flags.json
+
+# ---------------------------------------------------------------------------
+#  PI-AGGREGATOR — Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+pip-log.txt
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+ENV/
+
+# Caches d'outils
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Flask / FastAPI
+instance/
+*.sqlite3
+*.db
+
+# ---------------------------------------------------------------------------
+#  LOGS & DIVERS
+# ---------------------------------------------------------------------------
+*.log
+logs/
+tmp/
+*.tmp
+*.bak
+
+# ---------------------------------------------------------------------------
+#  ÉDITEURS / IDE
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---------------------------------------------------------------------------
+#  OS
+# ---------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+Thumbs.db
+desktop.ini
+
+# ---------------------------------------------------------------------------
+#  CLAUDE CODE
+# ---------------------------------------------------------------------------
+CLAUDE.md
+.claude/settings.local.json
