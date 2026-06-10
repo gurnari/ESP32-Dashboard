@@ -27,4 +27,5 @@ modification. Le contrat exact et ses pièges sont documentés dans
 
 - **Firmware** : profils `arduino-cli` dans [`firmware/sketch.yaml`](firmware/sketch.yaml).
   Depuis `firmware/` : `arduino-cli compile --profile <profil> .`
-- **Pi** : service Python (à venir), à tester localement avant déploiement.
+- **Pi** : voir [pi-aggregator/README.md](pi-aggregator/README.md) — `ruff check . && pytest`
+  puis `uvicorn --factory pi_aggregator.app:create_app`.

@@ -1,0 +1,10 @@
+[
+  { "ID": 1,   "Description": "Clock",      "Active": true, "PosX": 10,  "PosY": 0,   "Width": 430, "Height": 155, "Row_Height": 10, "Col_Width": 10,  "Refresh": 1,   "Group": 1, "Extra1": "CET-1CEST,M3.5.0,M10.5.0/3", "Extra2": "", "Extra3": "", "Extra4": "", "Extra5": "" },
+  { "ID": 2,   "Description": "Cal Events", "Active": true, "PosX": 440, "PosY": 255, "Width": 360, "Height": 145, "Row_Height": 22, "Col_Width": 10,  "Refresh": 360, "Group": 2, "Extra1": "", "Extra2": "", "Extra3": "", "Extra4": "", "Extra5": "" },
+  { "ID": 8,   "Description": "OpenMeteo",  "Active": true, "PosX": 10,  "PosY": 285, "Width": 430, "Height": 105, "Row_Height": 0,  "Col_Width": 100, "Refresh": 360, "Group": 4, "Extra1": "48.8566", "Extra2": "2.3522", "Extra3": "4", "Extra4": "", "Extra5": "" },
+  { "ID": 16,  "Description": "Tracking",   "Active": true, "PosX": 440, "PosY": 400, "Width": 360, "Height": 80,  "Row_Height": 22, "Col_Width": 0,   "Refresh": 120, "Group": 5, "Extra1": "", "Extra2": "", "Extra3": "", "Extra4": "", "Extra5": "" },
+  { "ID": 1024, "Description": "Claude",    "Active": false, "PosX": 10,  "PosY": 155, "Width": 430, "Height": 130, "Row_Height": 22, "Col_Width": 10,  "Refresh": 60,  "Group": 3, "Extra1": "", "Extra2": "", "Extra3": "", "Extra4": "", "Extra5": "" },
+  { "ID": 64,  "Description": "Bambu",      "Active": true, "PosX": 10,  "PosY": 390, "Width": 430, "Height": 90,  "Row_Height": 22, "Col_Width": 70,  "Refresh": 4,   "Group": 7, "Extra1": "P2S", "Extra2": "", "Extra3": "50", "Extra4": "", "Extra5": "" },
+  { "ID": 128, "Description": "Battery",    "Active": true, "PosX": 440, "PosY": 0,   "Width": 360, "Height": 28,  "Row_Height": 0,  "Col_Width": 0,   "Refresh": 60,  "Group": 8, "Extra1": "", "Extra2": "", "Extra3": "", "Extra4": "", "Extra5": "" },
+  { "ID": 256, "Description": "Calendar",   "Active": true, "PosX": 440, "PosY": 25,  "Width": 360, "Height": 230, "Row_Height": 28, "Col_Width": 210, "Refresh": 60,  "Group": 9, "Extra1": "", "Extra2": "", "Extra3": "", "Extra4": "", "Extra5": "" }
+]

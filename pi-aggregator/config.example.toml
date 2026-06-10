@@ -1,0 +1,28 @@
+# Copier vers config.toml (gitignoré : contient la clé API PKGE) et adapter.
+
+[server]
+host = "0.0.0.0"
+port = 8080
+
+[layout]
+# Chemin (relatif au config.toml) du layout servi au firmware — éditable sans reflasher.
+file = "layout.json"
+
+[weather]
+latitude = 48.8566
+longitude = 2.3522
+days = 4              # 1 à 7 (limite firmware)
+refresh_minutes = 60
+
+# Section absente ou api_key vide → clé "tracking" omise du JSON
+# (le firmware affiche « Not available »).
+[tracking]
+api_key = ""
+refresh_minutes = 30
+
+# Utilisation de Claude (Usage Admin API d'Anthropic).
+# Clé Admin sk-ant-admin... — nécessite une ORGANISATION Console (pas
+# disponible pour un compte individuel). Vide → clé "claude" omise du JSON.
+[claude]
+admin_api_key = ""
+refresh_minutes = 60
