@@ -12,6 +12,7 @@ from datetime import UTC, datetime, timedelta
 import httpx
 
 from .config import Config
+from .sources.claude_usage import fetch_claude_usage
 from .sources.layout import load_layout
 from .sources.tracking import fetch_tracking
 from .sources.weather import fetch_weather
@@ -71,6 +72,15 @@ class Aggregator:
                     "tracking",
                     lambda: fetch_tracking(tracking_cfg, client),
                     timedelta(minutes=tracking_cfg.refresh_minutes),
+                )
+            )
+        if cfg.claude:
+            claude_cfg = cfg.claude
+            self.sources.append(
+                Source(
+                    "claude",
+                    lambda: fetch_claude_usage(claude_cfg, client),
+                    timedelta(minutes=claude_cfg.refresh_minutes),
                 )
             )
 

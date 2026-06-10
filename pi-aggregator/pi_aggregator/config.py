@@ -23,12 +23,19 @@ class TrackingConfig:
 
 
 @dataclass(frozen=True)
+class ClaudeConfig:
+    admin_api_key: str
+    refresh_minutes: int = 60
+
+
+@dataclass(frozen=True)
 class Config:
     layout_file: Path
     host: str = "0.0.0.0"
     port: int = 8080
     weather: WeatherConfig | None = None
     tracking: TrackingConfig | None = None
+    claude: ClaudeConfig | None = None
 
 
 def load_config(path: str | Path | None = None) -> Config:
@@ -48,6 +55,8 @@ def load_config(path: str | Path | None = None) -> Config:
     weather_raw = raw.get("weather")
     tracking_raw = raw.get("tracking")
     tracking_enabled = bool(tracking_raw and tracking_raw.get("api_key"))
+    claude_raw = raw.get("claude")
+    claude_enabled = bool(claude_raw and claude_raw.get("admin_api_key"))
     server = raw.get("server", {})
 
     return Config(
@@ -56,4 +65,5 @@ def load_config(path: str | Path | None = None) -> Config:
         port=int(server.get("port", 8080)),
         weather=WeatherConfig(**weather_raw) if weather_raw else None,
         tracking=TrackingConfig(**tracking_raw) if tracking_enabled else None,
+        claude=ClaudeConfig(**claude_raw) if claude_enabled else None,
     )

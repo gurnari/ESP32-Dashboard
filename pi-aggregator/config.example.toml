@@ -19,3 +19,10 @@ refresh_minutes = 60
 [tracking]
 api_key = ""
 refresh_minutes = 30
+
+# Utilisation de Claude (Usage Admin API d'Anthropic).
+# Clé Admin sk-ant-admin... — nécessite une ORGANISATION Console (pas
+# disponible pour un compte individuel). Vide → clé "claude" omise du JSON.
+[claude]
+admin_api_key = ""
+refresh_minutes = 60
