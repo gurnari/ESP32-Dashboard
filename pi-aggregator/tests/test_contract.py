@@ -42,7 +42,7 @@ def test_dashboard_sert_layout_et_omet_les_sources_inactives():
     assert doc["layout"] == json.loads(LAYOUT_FILE.read_text())
     assert "lastUpdated" in doc
     # sources non configurées / supprimées → clés absentes (firmware : « Not available »)
-    for key in ("weather", "tracking", "stocks", "makerworld", "calEvents"):
+    for key in ("weather", "tracking", "claude", "stocks", "makerworld", "calEvents"):
         assert key not in doc
     # capacité du DynamicJsonDocument côté firmware
     assert len(response.content) < 60_000

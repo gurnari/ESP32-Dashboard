@@ -18,6 +18,26 @@ immédiatement, pour minimiser le temps éveillé.
 | `layout`   | `layout.json` local, relu à chaque requête | modifiable sans reflasher l'ESP32 |
 | `weather`  | Open-Meteo (forme de `fetchOpenMeteo()`)   | sunrise/sunset sans secondes |
 | `tracking` | PKGE `GET /v1/packages/list`        | omise si pas de clé API |
+| `claude`   | Anthropic Usage Admin API (`usage_report/messages`, seaux 1d) | omise si pas de clé ; voir note ci-dessous |
+
+### Note — widget « utilisation Claude » (squelette)
+
+Nouvelle clé `claude` (hors contrat d'origine) : tokens entrée/sortie du **jour**
+et des **7 derniers jours glissants** (UTC). Forme :
+
+```json
+{ "today": {"input_tokens": 0, "output_tokens": 0},
+  "week":  {"input_tokens": 0, "output_tokens": 0} }
+```
+
+- Nécessite une **clé Admin Anthropic** (`sk-ant-admin...`) dans `[claude]` de
+  `config.toml`. ⚠️ L'Admin API exige une **organisation Console** — elle n'est
+  pas disponible pour un compte individuel. Sans clé, la clé JSON est omise.
+- Le **widget firmware n'existe pas encore** : l'ID layout **1024** est réservé
+  (`Active: false` dans `layout.json`, emplacement de l'ancien widget Stocks).
+  À implémenter sur le gabarit `proxmox.cpp`, puis passer `Active` à `true`.
+- Si la source de données change un jour (autre API, données locales Claude
+  Code), seule `fetch_claude_usage()` est à remplacer — la forme JSON est stable.
 
 `stocks`, `makerworld`, `proxmox` : supprimés. `calEvents` : reporté.
 Bambu Lab reste en MQTT direct depuis l'ESP32 (hors contrat HTTP).
