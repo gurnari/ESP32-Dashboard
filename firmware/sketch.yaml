@@ -55,6 +55,22 @@ profiles:
     build:
       properties:
         compiler.cpp.extra_flags: -DDEFAULT_PIN_PRESET_ESP32C6_FIREBEETLE -DUSE_ZIGBEE=1
+  xiao_esp32c6:
+    # XIAO_ESP32C6 has no "custom" PartitionScheme; huge_app (3MB No-OTA)
+    # covers the ~1.4MB binary without the repo partitions.csv.
+    fqbn: esp32:esp32:XIAO_ESP32C6:PartitionScheme=huge_app
+    platforms:
+      - platform: esp32:esp32 (3.3.7)
+        platform_index_url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+    libraries:
+      - GxEPD2 (1.6.8)
+      - Adafruit GFX Library (1.12.5)
+      - Adafruit BusIO (1.17.4)
+      - ArduinoJson (7.4.3)
+      - PubSubClient (2.8)
+    build:
+      properties:
+        compiler.cpp.extra_flags: -DDEFAULT_PIN_PRESET_XIAO_ESP32C6
   esp32c6_supermini:
     fqbn: esp32:esp32:makergo_c6_supermini
     platforms:

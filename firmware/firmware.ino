@@ -1,7 +1,6 @@
 #include "app.h"
 #include <WiFi.h>
 #include "esp_wifi.h"
-#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <time.h>
@@ -36,7 +35,7 @@ char mqtt_pass[CFG_MQTT_PASS_MAX];
 char mqtt_sn[CFG_MQTT_SN_MAX];
 char mqtt_ip[CFG_MQTT_IP_MAX];
 uint16_t mqtt_port;
-char googleapi[CFG_GOOGLEAPI_MAX];
+char pi_url[CFG_PI_URL_MAX];
 char device_timezone[CFG_TIMEZONE_MAX];
 PinConfig activePins = makePinPreset(DEFAULT_PIN_PRESET);
 PinConfig customPins = makePinPreset(PinPreset::Custom);
@@ -82,6 +81,7 @@ const char* pinPresetValue(PinPreset preset) {
     case PinPreset::Esp32Default: return "esp32";
     case PinPreset::Esp32C6Default: return "esp32_c6";
     case PinPreset::Esp32C6SuperMini: return "esp32_c6_supermini";
+    case PinPreset::XiaoEsp32C6: return "xiao_esp32c6";
     case PinPreset::Custom:
     default: return "custom";
   }
@@ -93,6 +93,7 @@ const char* pinPresetLabel(PinPreset preset) {
     case PinPreset::Esp32Default: return "ESP32";
     case PinPreset::Esp32C6Default: return "ESP32 C6";
     case PinPreset::Esp32C6SuperMini: return "ESP32-C6 SuperMini";
+    case PinPreset::XiaoEsp32C6: return "XIAO ESP32C6";
     case PinPreset::Custom:
     default: return "Custom";
   }
@@ -117,6 +118,7 @@ PinPreset parsePinPreset(const String& value) {
   if (value == "esp32") return PinPreset::Esp32Default;
   if (value == "esp32_c6") return PinPreset::Esp32C6Default;
   if (value == "esp32_c6_supermini" || value == "esp32_c6_mini") return PinPreset::Esp32C6SuperMini;
+  if (value == "xiao_esp32c6") return PinPreset::XiaoEsp32C6;
   if (value == "custom") return PinPreset::Custom;
   return DEFAULT_PIN_PRESET;
 }
@@ -304,6 +306,7 @@ String buildPage()
     PinPreset::Esp32Default,
     PinPreset::Esp32C6Default,
     PinPreset::Esp32C6SuperMini,
+    PinPreset::XiaoEsp32C6,
     PinPreset::Custom
   };
   for (PinPreset preset : presets) {
@@ -587,8 +590,9 @@ html += R"rawliteral(
     <label>WiFi Password</label>
     <input  name="wifi_pass" placeholder="Enter WiFi password">
 
-    <label>Google Script ID</label>
-    <input name="googleapi" placeholder="Paste Google Apps Script ID">
+    <label>Raspberry Pi (IP[:port])</label>
+    <input name="pi_url" placeholder="192.168.1.50:8080">
+    <div class="note">Adresse de l'agrégateur local. Sans chemin explicite, /dashboard est utilisé.</div>
 
     <label>Timezone</label>
     <input name="device_timezone" value=")rawliteral";
@@ -991,7 +995,7 @@ void handleConfig() {
 void handleSave() {
   copyToCfg(wifi_ssid, sizeof(wifi_ssid), server.arg("wifi_ssid"));
   copyToCfg(wifi_pass, sizeof(wifi_pass), server.arg("wifi_pass"));
-  copyToCfg(googleapi, sizeof(googleapi), server.arg("googleapi"));
+  copyToCfg(pi_url, sizeof(pi_url), server.arg("pi_url"));
   copyToCfg(device_timezone, sizeof(device_timezone), server.arg("device_timezone"));
 // Serial.printf("Wifi %s Pass %s", wifi_ssid, wifi_pass);
 
@@ -1036,7 +1040,7 @@ void handleSave() {
 
   preferences.putString("wifi_ssid", wifi_ssid);
   preferences.putString("wifi_pass", wifi_pass);
-  preferences.putString("googleapi", googleapi);
+  preferences.putString("pi_url", pi_url);
   preferences.putString("device_timezone", device_timezone);
 
   preferences.putString("mqtt_pass", mqtt_pass);
@@ -1425,7 +1429,6 @@ void setup() {
   fullRefresh = (bootCount % (60 * 24) == 0);
 
 
-// preferences.putString("googleapi", "A");
   int wakeup_reason = esp_sleep_get_wakeup_cause();
 
   switch (wakeup_reason) {
@@ -1443,7 +1446,7 @@ void setup() {
   memset(mqtt_pass, 0, sizeof(mqtt_pass));
   memset(mqtt_sn, 0, sizeof(mqtt_sn));
   memset(mqtt_ip, 0, sizeof(mqtt_ip));
-  memset(googleapi, 0, sizeof(googleapi));
+  memset(pi_url, 0, sizeof(pi_url));
   memset(device_timezone, 0, sizeof(device_timezone));
   preferences.getString("wifi_ssid", wifi_ssid, sizeof(wifi_ssid));
   preferences.getString("wifi_pass", wifi_pass, sizeof(wifi_pass));
@@ -1451,7 +1454,7 @@ void setup() {
   preferences.getString("mqtt_sn", mqtt_sn, sizeof(mqtt_sn));
   preferences.getString("mqtt_ip", mqtt_ip, sizeof(mqtt_ip));
   mqtt_port = preferences.getUInt("mqtt_port", 8883);
-  preferences.getString("googleapi", googleapi, sizeof(googleapi));
+  preferences.getString("pi_url", pi_url, sizeof(pi_url));
   preferences.getString("device_timezone", device_timezone, sizeof(device_timezone));
   if (device_timezone[0] == '\0') {
     strncpy(device_timezone, "UTC0", sizeof(device_timezone) - 1);
