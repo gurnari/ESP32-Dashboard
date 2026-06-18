@@ -7,6 +7,10 @@ Raspberry Pi du réseau local, en réutilisant le code de rendu firmware existan
 L'ESP32 se réveille, fait **une seule requête HTTP** vers le Pi, parse un JSON
 consolidé, dessine les widgets e-paper, puis se rendort (deep sleep).
 
+📘 **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — documentation de référence
+complète : fonctionnement détaillé firmware + Pi, contrat JSON, build/flash,
+déploiement, dépannage et état d'avancement. À lire pour reprendre le projet à la main.
+
 ## Structure
 
 | Dossier            | Rôle                                                                 |
