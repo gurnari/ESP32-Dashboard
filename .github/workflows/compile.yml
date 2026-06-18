@@ -40,6 +40,12 @@ jobs:
             build-dir: build_esp32c6_firebeetle_zigbee
             extra-cpp-flags: -DUSE_COLORDISPLAY=0 -DUSE_ZIGBEE=1 -DDEFAULT_PIN_PRESET_ESP32C6_FIREBEETLE
 
+          - name: XIAO-ESP32C6
+            fqbn: esp32:esp32:XIAO_ESP32C6
+            board-options: PartitionScheme=huge_app
+            build-dir: build_xiao_esp32c6
+            extra-cpp-flags: -DUSE_COLORDISPLAY=0 -DUSE_ZIGBEE=0 -DDEFAULT_PIN_PRESET_XIAO_ESP32C6
+
           - name: ESP32C6-SuperMini
             fqbn: esp32:esp32:makergo_c6_supermini
             board-options: PartitionScheme=custom

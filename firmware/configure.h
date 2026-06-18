@@ -67,6 +67,7 @@ enum class PinPreset : uint8_t {
   Esp32Default,
   Esp32C6Default,
   Esp32C6SuperMini,
+  XiaoEsp32C6,
   Custom
 };
 
@@ -78,6 +79,13 @@ inline constexpr PinConfig makePinPreset(PinPreset preset) {
       return PinConfig{1, 8, 14, 7, 23, 22, 4, 0, 2};
     case PinPreset::Esp32C6SuperMini:
       return PinConfig{4, 20, 21, 22, 7, 5, 1, PIN_UNASSIGNED, 2};
+    case PinPreset::XiaoEsp32C6:
+      // Seeed XIAO ESP32C6 + Waveshare e-Paper Driver HAT.
+      // Silk → GPIO: CS=D1(1) DC=D3(21) RST=D4(22) BUSY=D5(23)
+      // SCK=D8(19) MOSI=D10(18). No panel power pin (HAT fed from 3V3).
+      // Battery divider on A0(0); demo button on D2(2) — deep-sleep wake
+      // on the C6 requires GPIO0-7.
+      return PinConfig{1, 21, 22, 23, 19, 18, PIN_UNASSIGNED, 0, 2};
     case PinPreset::Esp32Default:
       return PinConfig{15, 27, 26, 25, 13, 14, 4, 35, 33};
     case PinPreset::Custom:
@@ -101,11 +109,15 @@ inline constexpr PinPreset DEFAULT_PIN_PRESET = PinPreset::Esp32Default;
 inline constexpr PinPreset DEFAULT_PIN_PRESET = PinPreset::Esp32C6Default;
 #elif defined(DEFAULT_PIN_PRESET_ESP32C6_SUPERMINI)
 inline constexpr PinPreset DEFAULT_PIN_PRESET = PinPreset::Esp32C6SuperMini;
+#elif defined(DEFAULT_PIN_PRESET_XIAO_ESP32C6)
+inline constexpr PinPreset DEFAULT_PIN_PRESET = PinPreset::XiaoEsp32C6;
 #elif CONFIG_IDF_TARGET_ESP32C6
   #if defined(ARDUINO_DFROBOT_FIREBEETLE_2_ESP32C6)
 inline constexpr PinPreset DEFAULT_PIN_PRESET = PinPreset::Esp32C6Default;
   #elif defined(ARDUINO_MAKERGO_C6_SUPERMINI)
 inline constexpr PinPreset DEFAULT_PIN_PRESET = PinPreset::Esp32C6SuperMini;
+  #elif defined(ARDUINO_XIAO_ESP32C6)
+inline constexpr PinPreset DEFAULT_PIN_PRESET = PinPreset::XiaoEsp32C6;
   #else
 inline constexpr PinPreset DEFAULT_PIN_PRESET = PinPreset::Esp32C6Default;
   #endif

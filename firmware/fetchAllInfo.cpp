@@ -117,7 +117,7 @@ bool loadLayout() {
     return true;
 }
 
-// ----------------------- Fetch data from Google Script -----------------------
+// ------------------ Fetch data from the Raspberry Pi aggregator ------------------
 // This endpoint is the "single source of truth" for layout + multi-widget data.
 // Layout is cached in Preferences so we can render something even when Wi-Fi fails.
 bool fetchData() {
@@ -133,8 +133,9 @@ bool fetchData() {
     }
 
     HTTPClient http;
-    http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
-    http.setTimeout(28000);
+    // Local Pi answers from cache in well under a second; a short timeout
+    // bounds the awake time when the Pi is down.
+    http.setTimeout(10000);
     Serial.println(apiUrl);
     http.begin(apiUrl);
 

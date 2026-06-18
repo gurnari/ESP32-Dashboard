@@ -189,7 +189,7 @@ The setup page can store:
 
 - Wi-Fi SSID and password
 - device timezone
-- Google Script ID
+- Raspberry Pi address (IP[:port], `/dashboard` is assumed when no path is given)
 - MQTT IP, port, username, and password
 - pin preset selection
 - custom pin mapping when `Custom` is selected
@@ -216,53 +216,36 @@ Current behavior:
 
 Because printer status is refreshed periodically, the Zigbee off action can happen about 1 to 5 minutes after the fan stops.
 
-## Google Apps Script
+## Data source (Raspberry Pi aggregator)
 
-The firmware expects a Google Apps Script web app that acts as a central data source.
+This personal fork drops the Google Apps Script dependency. The firmware now
+expects a **local Raspberry Pi** to act as the central data source, exposing a
+single consolidated JSON endpoint over plain HTTP on the LAN. See
+[`pi-aggregator/`](../pi-aggregator/) for the Python service.
 
 Supported data:
 
 - parcel tracking
 - calendar events
-- stocks
 - layout configuration
-- Proxmox data
 - weather
-- MakerWorld data
+- Claude usage
 
-### Deployment
+### Configuration
 
-1. create a new Google Apps Script project
-2. add your script
-3. deploy it as a Web App
-4. copy the published URL
-
-The published URL looks like:
+Enter the Pi address on the device setup page (not in the source code):
 
 ```text
-https://script.google.com/macros/s/<SCRIPT_ID>/exec
+192.168.1.50:8080
 ```
 
-The firmware only needs the `<SCRIPT_ID>` portion. You enter that value on the device setup page, not in the source code.
+Without an explicit path, the firmware appends `/dashboard`. A bare `http://`
+prefix is accepted and stripped; HTTPS is intentionally not used between the
+ESP32 and the Pi (local network, lower awake time and RAM use).
 
-### Spreadsheet Setup
-
-The easiest setup is to use the bundled spreadsheet template:
-
-1. create a new empty Google spreadsheet in Google Drive
-2. import [ESP32_Import.ods](../googleScripts/ESP32_Import.ods)
-3. rename the spreadsheet to `ESP32Dashboard`
-
-The script looks for a spreadsheet with that exact name in Google Drive.
-
-The imported file includes the expected sheets and starter structure for:
-
-- `Stocks`
-- `Tracking`
-- `Layout`
-- `ListCarriers`
-
-If you prefer a manual setup, sample CSV files are also included in [googleScripts](../googleScripts).
+The firmware makes a single HTTP GET per wake-up and parses the JSON returned by
+the aggregator. The expected schema (the "JSON contract") is documented in
+[pi-aggregator/golden/README.md](../pi-aggregator/golden/README.md).
 
 ### Layout Tips
 
@@ -311,7 +294,7 @@ The case model is available here:
 GitHub Actions can build firmware for:
 
 - ESP32
-- ESP32-C6
+- ESP32-C6 (FireBeetle, SuperMini, XIAO)
 - ESP32-C6 with Zigbee
 
 The workflow uses the repo [partitions.csv](partitions.csv) and can inject a firmware version string that is shown on the device near the battery indicator.
@@ -325,7 +308,8 @@ Key files:
 - [fetchAllInfo.cpp](fetchAllInfo.cpp): JSON parsing and widget rendering
 - [bambulab.cpp](bambulab.cpp): printer status and MQTT fetch
 - [dash_zigbee.cpp](dash_zigbee.cpp): Zigbee integration
-- [googleScripts](../googleScripts): Apps Script samples and CSV examples
+- [pi-aggregator](../pi-aggregator): Raspberry Pi data source (current)
+- [googleScripts](../googleScripts): legacy Apps Script samples (reference only, no longer used)
 
 ## Licenses and Attribution
 
