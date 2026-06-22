@@ -1,0 +1,37 @@
+[Unit]
+# Agrégateur de données du dashboard e-paper (remplace le Google Apps Script).
+# Fichier de référence : install.sh régénère la version finale avec les chemins
+# réellement détectés. À adapter si tu l'installes à la main.
+Description=pi-aggregator (dashboard e-paper ESP32)
+Documentation=https://github.com/gurnari/ESP32-Dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+
+# Dossier du paquet Python (le checkout du repo, sous-dossier pi-aggregator/).
+WorkingDirectory=/home/pi/ESP32-Dashboard/pi-aggregator
+
+# Config + secrets hors du repo (clé PKGE, clé Admin Claude…).
+Environment=PI_AGGREGATOR_CONFIG=/etc/pi-aggregator/config.toml
+
+# Lance le module : il lit host/port depuis config.toml et démarre uvicorn.
+ExecStart=/home/pi/ESP32-Dashboard/pi-aggregator/.venv/bin/python -m pi_aggregator.app
+
+Restart=on-failure
+RestartSec=5
+
+# Durcissement compatible avec un checkout dans /home (pas de ProtectHome,
+# sinon le service ne verrait plus son propre code).
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectControlGroups=yes
+ProtectKernelTunables=yes
+RestrictSUIDSGID=yes
+
+[Install]
+WantedBy=multi-user.target
