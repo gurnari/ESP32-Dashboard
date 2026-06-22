@@ -96,7 +96,43 @@ Preset defaults:
 
 ### Arduino IDE
 
-Open [firmware.ino](firmware.ino), select the correct ESP32 board, then compile and upload as usual.
+Requirements: Arduino IDE >= 2.0.8 and the **esp32 board package >= 3.0.0**
+(Boards Manager). The whole sketch lives in this `firmware/` folder and the
+`.ino` matches the folder name, so all `.cpp`/`.h` files are compiled together;
+the `fonts/` and `images/` subfolders only hold headers and assets, so they need
+no special handling.
+
+There are two ways to build, depending on your IDE version.
+
+#### A. With a sketch profile (recommended, Arduino IDE >= 2.3)
+
+Arduino IDE 2.3+ reads [sketch.yaml](sketch.yaml). Open this folder, pick a
+profile (e.g. `xiao_esp32c6`) from the board/profile selector, then compile and
+upload. The IDE installs the pinned core (`esp32 3.3.7`) and the exact library
+versions automatically, and applies the right partition scheme and pin preset.
+Nothing else to configure.
+
+Available profiles: `esp32`, `esp32_waveshare`, `esp32c6_firebeetle`,
+`esp32c6_firebeetle_zigbee`, `xiao_esp32c6`, `esp32c6_supermini`,
+`esp32c6_supermini_zigbee`.
+
+#### B. Manual setup (older IDE, or no profile)
+
+1. Boards Manager: install **esp32 >= 3.0.0** (ideally 3.3.7).
+2. Library Manager: install **GxEPD2**, **Adafruit GFX Library**,
+   **Adafruit BusIO**, **ArduinoJson** (v7), **PubSubClient**.
+3. Tools menu:
+   - Seeed XIAO ESP32C6: select board **XIAO_ESP32C6**, set
+     **Partition Scheme = Huge App (3MB No OTA)**.
+   - Generic ESP32: select your board, set **Partition Scheme = Custom**
+     (the IDE then uses the bundled [partitions.csv](partitions.csv)).
+4. Compile and upload as usual.
+
+The pin preset auto-selects from the chosen board (see [configure.h](configure.h)):
+selecting `XIAO_ESP32C6` activates the XIAO preset via the `ARDUINO_XIAO_ESP32C6`
+define, so you do not need to set any `-D...PRESET` flag by hand. To force a
+specific preset regardless of the board, define one of the
+`DEFAULT_PIN_PRESET_*` macros (this is what the profiles do).
 
 For Zigbee on ESP32-C6:
 
