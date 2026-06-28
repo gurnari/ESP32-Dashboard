@@ -1586,6 +1586,7 @@ void setup() {
         infoBattery = getLayout(128);
         infoCalendar = getLayout(256);
         infoAmbient  = getLayout(2048);
+        ambientIf    = infoAmbient && infoAmbient->Active; // recalcul après re-fetch
 
         if (fetchOk) {
           eventIf = shouldFetchRefresh(infoEvent);
