@@ -8,6 +8,7 @@
 #include "bambulab.h"
 #include "proxmox.h"
 #include "calendar.h"
+#include "ambient.h"
 #include <WebServer.h>
 #include <Preferences.h>
 #include <cstring>
@@ -152,6 +153,7 @@ void saveCustomPinConfig(Preferences& prefs, const PinConfig& pins) {
   prefs.putInt("pin_disp_power", pins.displayPower);
   prefs.putInt("pin_battery", pins.battery);
   prefs.putInt("pin_demo_btn", pins.demoButton);
+  prefs.putInt("pin_dht11", pins.dht11);
 }
 
 PinConfig loadCustomPinConfig(Preferences& prefs, const PinConfig& fallback) {
@@ -165,6 +167,7 @@ PinConfig loadCustomPinConfig(Preferences& prefs, const PinConfig& fallback) {
   pins.displayPower = static_cast<int16_t>(prefs.getInt("pin_disp_power", fallback.displayPower));
   pins.battery = static_cast<int16_t>(prefs.getInt("pin_battery", fallback.battery));
   pins.demoButton = static_cast<int16_t>(prefs.getInt("pin_demo_btn", fallback.demoButton));
+  pins.dht11 = static_cast<int16_t>(prefs.getInt("pin_dht11", fallback.dht11));
   return pins;
 }
 
@@ -1232,16 +1235,19 @@ void drawDemoScreen() {
   LayoutItem* infoBambu = getLayout(64);
   LayoutItem* infoBattery = getLayout(128);
   LayoutItem* infoCalendar = getLayout(256);
-  
+  LayoutItem* infoAmbient  = getLayout(2048);
+
   display.firstPage();
   do {
     LayoutItem* items[] = { infoClock, infoEvent, infoStocks, infoOpenMeteo,
-                            infoTracking, infoProxMox, infoBambu, infoBattery, infoCalendar };
+                            infoTracking, infoProxMox, infoBambu, infoBattery, infoCalendar,
+                            infoAmbient };
 
     const char* labels[] = { "Clock", "Event", "Stocks", "Weather",
-                             "Tracking", "ProxMox", "Bambu", "Battery", "Calendar" };
+                             "Tracking", "ProxMox", "Bambu", "Battery", "Calendar",
+                             "Ambient" };
 
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 10; i++) {
       LayoutItem* item = items[i];
       if (item && item->Active) {
 
@@ -1514,6 +1520,7 @@ void setup() {
   LayoutItem* infoBambu = getLayout(64);
   LayoutItem* infoBattery = getLayout(128);
   LayoutItem* infoCalendar = getLayout(256);
+  LayoutItem* infoAmbient  = getLayout(2048);
 
   switch (readWakeButtonAction()) {
     case BUTTON_ACTION_AP:
@@ -1542,6 +1549,8 @@ void setup() {
   bool batteryIf = shouldFetchRefresh(infoBattery);
   bool calendarIf = shouldFetchRefresh(infoCalendar);
   bool bambuIf = (infoBambu && infoBambu->Active && (((isPrinting || previousIsPrinting) && (bootCount % infoBambu->Refresh == 0)) || (bootCount % (infoBambu->Refresh * 2) == 0))) || pendingBambuRetry;
+  // Ambiant local (DHT11) — pas de fetch réseau, activation directe selon layout
+  bool ambientIf = infoAmbient && infoAmbient->Active;
 
   // Bring Wi-Fi up only when at least one widget needs fresh data.
   bool needWiFi =
@@ -1576,6 +1585,8 @@ void setup() {
         infoBambu = getLayout(64);
         infoBattery = getLayout(128);
         infoCalendar = getLayout(256);
+        infoAmbient  = getLayout(2048);
+        ambientIf    = infoAmbient && infoAmbient->Active; // recalcul après re-fetch
 
         if (fetchOk) {
           eventIf = shouldFetchRefresh(infoEvent);
@@ -1650,6 +1661,11 @@ void setup() {
 
   DBGF("Boot Count %d", bootCount);
 
+  // Lecture locale du capteur DHT11 (pas de WiFi nécessaire)
+#if USE_DHT11
+  if (hasDht11Pin()) readAmbient();
+#endif
+
   if (hasDisplayPowerPin()) {
     // Not all hats need it; IO4 powers some e-paper boards.
     pinMode(activePins.displayPower, OUTPUT);
@@ -1699,6 +1715,7 @@ void setup() {
       if (stocksIf) stockWidget(infoStocks);
       if (trackingIf) trackingWidget(infoTracking);
       if (calendarIf) drawCalendar(infoCalendar);
+      if (ambientIf) drawAmbient(infoAmbient);
     } while (display.nextPage());
 
     DBG(F("Finish full"));
@@ -1734,6 +1751,9 @@ void setup() {
 
     if (calendarIf)
       updatePartial(infoCalendar, drawCalendar);
+
+    if (ambientIf)
+      updatePartial(infoAmbient, drawAmbient);
 
     if (infoBattery && (batteryIf || forceUpdateStatusBar || apiRetryStreak >= API_RETRY_DISPLAY_THRESHOLD))
       updatePartial(infoBattery, drawStatus);
