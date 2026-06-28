@@ -69,8 +69,9 @@ le fait déjà pour les autres widgets locaux.
 ### 3. Rendu — `void drawAmbient(LayoutItem*)` dans `ambient.cpp`
 
 - Affiche la température (« 21°C », gros) et l'humidité (« 48 % »), avec icônes
-  MDI thermomètre et goutte (constantes `MDI_*` dans `configure.h`, sur le modèle
-  des icônes météo existantes).
+  MDI thermomètre (`0xF050F`) et goutte/humidité (`0xF058E`) — **déjà présentes**
+  dans `MDI_22_Sparse` (inclus via `display.h`), dessinées avec `drawSparseChar`
+  comme les icônes météo. Aucune régénération de police MDI nécessaire.
 - Si `!ambient.valid` (aucune valeur, même en cache), afficher le message
   indisponible via `drawUnavailableMessage(item)` (helper existant dans
   `fetchAllInfo.cpp`).
@@ -80,8 +81,10 @@ le fait déjà pour les autres widgets locaux.
 
 ### 4. Intégration dispatch — `firmware/firmware.ino`
 
-- Nouvel **ID 512** « Ambient ».
-- Récupérer l'item : `LayoutItem* infoAmbient = getLayout(512);`
+- Nouvel **ID 2048** « Ambient ».
+- Récupérer l'item : `LayoutItem* infoAmbient = getLayout(2048);`
+- ⚠️ ID 512 = ancien MakerWorld, **interdit** par `tests/test_contract.py`
+  (widget supprimé) → on prend 2048, le prochain bitmask libre.
 - L'ajouter aux tableaux `items[]` / `labels[]` du flux de rendu principal
   (et au mode démo si pertinent).
 - Appeler `readAmbient()` pendant le réveil (avant le rendu), sous garde
@@ -93,7 +96,7 @@ le fait déjà pour les autres widgets locaux.
 
 ### 5. Layout — `pi-aggregator/layout.json`
 
-- Ajouter une entrée **ID 512** « Ambient » :
+- Ajouter une entrée **ID 2048** « Ambient » :
   - `Active: true`
   - `PosX: 10, PosY: 155, Width: 430, Height: 130` (slot Claude inactif).
   - `Refresh`, `Group` cohérents avec les autres widgets locaux.
@@ -126,4 +129,4 @@ le fait déjà pour les autres widgets locaux.
 - DHT11 **sur l'ESP32** (air au niveau du display), pas sur le Pi — choix
   utilisateur.
 - Pilote **bit-bang autonome**, pas de lib Adafruit — choix utilisateur.
-- Placement **slot Claude inactif** (ID 512, 10/155/430/130) — choix utilisateur.
+- Placement **slot Claude inactif** (ID 2048, 10/155/430/130) — choix utilisateur.
