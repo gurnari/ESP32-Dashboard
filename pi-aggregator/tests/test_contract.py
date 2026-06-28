@@ -61,3 +61,13 @@ def test_layout_illisible_donne_tableau_vide():
     with TestClient(create_app(cfg)) as client:
         doc = client.get("/dashboard").json()
     assert doc["layout"] == []
+
+
+def test_layout_contient_le_widget_ambiant():
+    layout = json.loads(LAYOUT_FILE.read_text())
+    item = next((i for i in layout if i["ID"] == 2048), None)
+    assert item is not None, "widget ambiant (ID 2048) absent du layout"
+    assert item["Active"] is True
+    assert item["Description"] == "Ambient"
+    # mêmes clés que le contrat (underscore sur Row_Height/Col_Width)
+    assert set(item) == set(GOLDEN["layout"][0])
