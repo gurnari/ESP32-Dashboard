@@ -105,7 +105,7 @@ inline constexpr PinConfig makePinPreset(PinPreset preset) {
 
 // Example override before the display is first touched:
 //   applyPinPreset(PinPreset::Esp32Default);
-//   setCustomPinConfig({15, 27, 26, 25, 13, 14, 4, 35, PIN_UNASSIGNED});
+//   setCustomPinConfig({15, 27, 26, 25, 13, 14, 4, 35, PIN_UNASSIGNED, PIN_UNASSIGNED});
 #if defined(DEFAULT_PIN_PRESET_ESP32_WAVESHARE)
 inline constexpr PinPreset DEFAULT_PIN_PRESET = PinPreset::Esp32Waveshare;
 #elif defined(DEFAULT_PIN_PRESET_ESP32)
