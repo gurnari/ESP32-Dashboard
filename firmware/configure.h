@@ -17,6 +17,10 @@
 #define USE_ZIGBEE          0
 #endif
 
+#ifndef USE_DHT11
+#define USE_DHT11 1   // 0 = pas de capteur DHT11 (aucun coût)
+#endif
+
 #if USE_ZIGBEE && !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(ARDUINO_ESP32C6_DEV)
 #error "USE_ZIGBEE currently supports the ESP32-C6 build in this project."
 #endif
@@ -60,6 +64,7 @@ struct PinConfig {
   int16_t displayPower;
   int16_t battery;
   int16_t demoButton;
+  int16_t dht11;       // DHT11 data pin (température/humidité ambiante locale)
 };
 
 enum class PinPreset : uint8_t {
@@ -74,26 +79,26 @@ enum class PinPreset : uint8_t {
 inline constexpr PinConfig makePinPreset(PinPreset preset) {
   switch (preset) {
     case PinPreset::Esp32Waveshare:
-      return PinConfig{15, 27, 26, 25, 13, 14, 33, 35, PIN_UNASSIGNED};
+      return PinConfig{15, 27, 26, 25, 13, 14, 33, 35, PIN_UNASSIGNED, PIN_UNASSIGNED};
     case PinPreset::Esp32C6Default:
-      return PinConfig{1, 8, 14, 7, 23, 22, 4, 0, 2};
+      return PinConfig{1, 8, 14, 7, 23, 22, 4, 0, 2, PIN_UNASSIGNED};
     case PinPreset::Esp32C6SuperMini:
-      return PinConfig{4, 20, 21, 22, 7, 5, 1, PIN_UNASSIGNED, 2};
+      return PinConfig{4, 20, 21, 22, 7, 5, 1, PIN_UNASSIGNED, 2, PIN_UNASSIGNED};
     case PinPreset::XiaoEsp32C6:
       // Seeed XIAO ESP32C6 + Waveshare e-Paper Driver HAT.
       // Silk → GPIO: CS=D1(1) DC=D3(21) RST=D4(22) BUSY=D5(23)
       // SCK=D8(19) MOSI=D10(18). No panel power pin (HAT fed from 3V3).
       // Battery divider on A0(0); demo button on D2(2) — deep-sleep wake
-      // on the C6 requires GPIO0-7.
-      return PinConfig{1, 21, 22, 23, 19, 18, PIN_UNASSIGNED, 0, 2};
+      // on the C6 requires GPIO0-7. DHT11 data=D6(16).
+      return PinConfig{1, 21, 22, 23, 19, 18, PIN_UNASSIGNED, 0, 2, 16};
     case PinPreset::Esp32Default:
-      return PinConfig{15, 27, 26, 25, 13, 14, 4, 35, 33};
+      return PinConfig{15, 27, 26, 25, 13, 14, 4, 35, 33, PIN_UNASSIGNED};
     case PinPreset::Custom:
     default:
       return PinConfig{
         PIN_UNASSIGNED, PIN_UNASSIGNED, PIN_UNASSIGNED,
         PIN_UNASSIGNED, PIN_UNASSIGNED, PIN_UNASSIGNED,
-        PIN_UNASSIGNED, PIN_UNASSIGNED, PIN_UNASSIGNED
+        PIN_UNASSIGNED, PIN_UNASSIGNED, PIN_UNASSIGNED, PIN_UNASSIGNED
       };
   }
 }
@@ -151,6 +156,10 @@ inline bool hasBatteryPin() {
 
 inline bool hasDemoButtonPin() {
   return isPinAssigned(activePins.demoButton);
+}
+
+inline bool hasDht11Pin() {
+  return isPinAssigned(activePins.dht11);
 }
 
 inline gpio_num_t getDemoWakeGpio() {

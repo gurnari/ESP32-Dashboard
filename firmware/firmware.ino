@@ -152,6 +152,7 @@ void saveCustomPinConfig(Preferences& prefs, const PinConfig& pins) {
   prefs.putInt("pin_disp_power", pins.displayPower);
   prefs.putInt("pin_battery", pins.battery);
   prefs.putInt("pin_demo_btn", pins.demoButton);
+  prefs.putInt("pin_dht11", pins.dht11);
 }
 
 PinConfig loadCustomPinConfig(Preferences& prefs, const PinConfig& fallback) {
@@ -165,6 +166,7 @@ PinConfig loadCustomPinConfig(Preferences& prefs, const PinConfig& fallback) {
   pins.displayPower = static_cast<int16_t>(prefs.getInt("pin_disp_power", fallback.displayPower));
   pins.battery = static_cast<int16_t>(prefs.getInt("pin_battery", fallback.battery));
   pins.demoButton = static_cast<int16_t>(prefs.getInt("pin_demo_btn", fallback.demoButton));
+  pins.dht11 = static_cast<int16_t>(prefs.getInt("pin_dht11", fallback.dht11));
   return pins;
 }
 
