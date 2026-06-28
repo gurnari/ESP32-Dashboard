@@ -49,10 +49,12 @@ static bool readRaw(int pin, uint8_t out[5]) {
   pinMode(pin, INPUT_PULLUP);
 
   noInterrupts();
-  // Réponse capteur : ~80µs LOW puis ~80µs HIGH.
-  bool ok = waitLevel(pin, LOW, 90) >= 0
-         && waitLevel(pin, HIGH, 90) >= 0
-         && waitLevel(pin, LOW, 90) >= 0;
+  // Réponse capteur : ~80µs LOW puis ~80µs HIGH. Timeouts larges (200µs) :
+  // tolèrent un capteur lent/instable sans rater la lecture (waitLevel rend la
+  // main dès le front), ce qui évite un retry de 1,2 s inutile (autonomie).
+  bool ok = waitLevel(pin, LOW, 200) >= 0
+         && waitLevel(pin, HIGH, 200) >= 0
+         && waitLevel(pin, LOW, 200) >= 0;
   if (ok) {
     for (int i = 0; i < 40 && ok; i++) {
       // Chaque bit : ~50µs LOW (start) puis HIGH dont la durée code 0/1.
