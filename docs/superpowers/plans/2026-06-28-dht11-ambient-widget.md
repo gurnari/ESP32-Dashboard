@@ -16,10 +16,16 @@
 - Broche DHT11 = **D6 (GPIO16)** sur le preset `XiaoEsp32C6` ; `PIN_UNASSIGNED` partout ailleurs.
 - Widget **ID 2048** (512 interdit = ancien MakerWorld, cf `tests/test_contract.py`).
 - Garde de compilation `#define USE_DHT11 1` dans `configure.h` ; garde runtime `hasDht11Pin()`.
-- Gate de vérification firmware = **compilation** des deux profils (pas de tests unitaires firmware) :
-  - `arduino-cli compile --profile xiao_esp32c6 .` (depuis `firmware/`)
-  - `arduino-cli compile --profile esp32 .` (non-régression)
-  - XIAO = partition `huge_app` (déjà dans le fqbn du profil, pas de flag custom).
+- Gate de vérification firmware = **compilation** (pas de tests unitaires firmware).
+  Le **profil XIAO est le gate liant** (carte cible) :
+  - `arduino-cli compile --profile xiao_esp32c6 .` (depuis `firmware/`) — XIAO porte
+    `huge_app` dans son fqbn, pas de flag custom.
+  - Non-régression esp32 générique — ⚠️ le profil `sketch.yaml` esp32 n'inclut PAS le
+    schéma de partition custom, donc `--profile esp32 .` SEUL déborde toujours
+    (« text section exceeds available space ») : c'est attendu, pas une régression.
+    Utiliser la commande CI complète :
+    `FW=$(pwd); arduino-cli compile --profile esp32 --board-options PartitionScheme=custom --build-property "build.custom_partitions=$FW/partitions.csv" --build-property "upload.maximum_size=3604480" .`
+    (≈38 % flash).
 - Commits atomiques, convention conventionnelle. **Pas de mention Claude Code** dans les messages.
 - Tout le code/affichage utilisateur est en français.
 
