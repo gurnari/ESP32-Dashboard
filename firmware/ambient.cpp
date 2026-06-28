@@ -1,5 +1,6 @@
 #include "ambient.h"
 #include "configure.h"
+#include "display.h"   // drawSparseString*, epaperFont, MDI_22_Sparse
 #include <Arduino.h>
 #include <Preferences.h>
 
@@ -97,9 +98,30 @@ bool readAmbient() {
 #endif
 }
 
-#include "display.h"   // drawSparseString*, epaperFont
-
 void drawAmbient(LayoutItem* item) {
   if (!item) return;
-  // Implémentation finale en Task 3.
+  if (!ambient.valid) {
+    int centerX = item->PosX + item->Width / 2;
+    int centerY = item->PosY + item->Height / 2;
+    drawSparseStringCentered(&epaperFont, centerX, centerY - 8,
+                             "Not available", GxEPD_BLACK);
+    drawSparseStringCentered(&epaperFont, centerX, centerY + 10,
+                             "at the moment", GxEPD_BLACK);
+    return;
+  }
+
+  int x = item->PosX + 24;
+  int y = item->PosY + 60;
+  char buf[16];
+
+  // Température
+  drawSparseChar(&MDI_22_Sparse, x, y, 0xF050F, GxEPD_BLACK);
+  snprintf(buf, sizeof(buf), "%.0f\xC2\xB0""C", ambient.temperature);
+  drawSparseStringCentered(&epaperFont, x + 130, y - 8, buf, GxEPD_BLACK);
+
+  // Humidité
+  y += 45;
+  drawSparseChar(&MDI_22_Sparse, x, y, 0xF058E, GxEPD_BLACK);
+  snprintf(buf, sizeof(buf), "%.0f %%", ambient.humidity);
+  drawSparseStringCentered(&epaperFont, x + 130, y - 8, buf, GxEPD_BLACK);
 }
