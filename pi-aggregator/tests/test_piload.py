@@ -1,5 +1,10 @@
 import asyncio
+from pathlib import Path
 
+import httpx
+
+from pi_aggregator.aggregator import Aggregator
+from pi_aggregator.config import Config, PiLoadConfig, load_config
 from pi_aggregator.sources.piload import (
     fetch_piload,
     parse_cpu_percent,
@@ -45,3 +50,39 @@ def test_fetch_piload_returns_none_off_linux(monkeypatch):
 
     monkeypatch.setattr(piload.Path, "read_text", boom)
     assert asyncio.run(fetch_piload()) is None
+
+
+# ---------------------------------------------------------------------------
+# Tests config + agrégateur (Task 2)
+# ---------------------------------------------------------------------------
+
+
+def test_piload_config_default_enabled(tmp_path):
+    cfg_file = tmp_path / "config.toml"
+    cfg_file.write_text("[piload]\nenabled = true\n")
+    cfg = load_config(cfg_file)
+    assert cfg.piload == PiLoadConfig(enabled=True, refresh_minutes=1)
+
+
+def test_piload_disabled_gives_none(tmp_path):
+    cfg_file = tmp_path / "config.toml"
+    cfg_file.write_text("[piload]\nenabled = false\n")
+    assert load_config(cfg_file).piload is None
+
+
+def test_piload_absent_gives_none(tmp_path):
+    cfg_file = tmp_path / "config.toml"
+    cfg_file.write_text("")  # pas de section [piload]
+    assert load_config(cfg_file).piload is None
+
+
+def test_aggregator_includes_piload_source_when_configured():
+    cfg = Config(layout_file=Path("layout.json"), piload=PiLoadConfig())
+    agg = Aggregator(cfg, client=httpx.AsyncClient())
+    assert any(s.name == "piload" for s in agg.sources)
+
+
+def test_aggregator_omits_piload_source_when_none():
+    cfg = Config(layout_file=Path("layout.json"))
+    agg = Aggregator(cfg, client=httpx.AsyncClient())
+    assert not any(s.name == "piload" for s in agg.sources)

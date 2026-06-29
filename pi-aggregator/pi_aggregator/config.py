@@ -29,6 +29,14 @@ class ClaudeConfig:
 
 
 @dataclass(frozen=True)
+class PiLoadConfig:
+    """Charge locale du Raspberry Pi (CPU, RAM, température)."""
+
+    enabled: bool = True
+    refresh_minutes: int = 1
+
+
+@dataclass(frozen=True)
 class Config:
     layout_file: Path
     host: str = "0.0.0.0"
@@ -36,6 +44,7 @@ class Config:
     weather: WeatherConfig | None = None
     tracking: TrackingConfig | None = None
     claude: ClaudeConfig | None = None
+    piload: PiLoadConfig | None = None
 
 
 def load_config(path: str | Path | None = None) -> Config:
@@ -57,6 +66,8 @@ def load_config(path: str | Path | None = None) -> Config:
     tracking_enabled = bool(tracking_raw and tracking_raw.get("api_key"))
     claude_raw = raw.get("claude")
     claude_enabled = bool(claude_raw and claude_raw.get("admin_api_key"))
+    piload_raw = raw.get("piload")
+    piload_enabled = bool(piload_raw and piload_raw.get("enabled", True))
     server = raw.get("server", {})
 
     return Config(
@@ -66,4 +77,5 @@ def load_config(path: str | Path | None = None) -> Config:
         weather=WeatherConfig(**weather_raw) if weather_raw else None,
         tracking=TrackingConfig(**tracking_raw) if tracking_enabled else None,
         claude=ClaudeConfig(**claude_raw) if claude_enabled else None,
+        piload=PiLoadConfig(**piload_raw) if piload_enabled else None,
     )
