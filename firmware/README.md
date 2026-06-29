@@ -265,7 +265,6 @@ Supported data:
 - calendar events
 - layout configuration
 - weather
-- Claude usage
 
 ### Configuration
 
