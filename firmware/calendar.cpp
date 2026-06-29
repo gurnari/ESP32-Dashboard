@@ -5,11 +5,11 @@
 #define COLS 7
 #define ROWS 6
 
-const char* daysHeader[7] = {"M","T","W","T","F","S","S"};
+const char* daysHeader[7] = {"Lu","Ma","Me","Je","Ve","Sa","Di"};
 
 const char* months[12] = {
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December"
+  "Janvier","Février","Mars","Avril","Mai","Juin",
+  "Juillet","Août","Septembre","Octobre","Novembre","Décembre"
 };
 
 int daysInMonth(int year,int month)
