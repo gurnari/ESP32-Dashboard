@@ -71,3 +71,18 @@ def test_layout_contient_le_widget_ambiant():
     assert item["Description"] == "Ambient"
     # mêmes clés que le contrat (underscore sur Row_Height/Col_Width)
     assert set(item) == set(GOLDEN["layout"][0])
+
+
+def test_layout_remplace_cal_events_par_piload():
+    layout = json.loads(LAYOUT_FILE.read_text())
+    by_id = {i["ID"]: i for i in layout}
+    # Cal Events (ID 2) désactivé
+    assert by_id[2]["Active"] is False
+    # PiLoad (ID 4096) actif, à la place de Cal Events
+    piload = by_id.get(4096)
+    assert piload is not None
+    assert piload["Active"] is True
+    assert piload["Description"] == "PiLoad"
+    assert (piload["PosX"], piload["PosY"]) == (440, 255)
+    assert (piload["Width"], piload["Height"]) == (360, 145)
+    assert set(piload) == set(GOLDEN["layout"][0])
