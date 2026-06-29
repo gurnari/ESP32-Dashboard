@@ -1,8 +1,31 @@
 #include "piload.h"
 #include "display.h"
 #include <Arduino.h>
+#include <Preferences.h>
+
+extern Preferences prefs;
 
 PiLoadData piload = {0.0f, 0.0f, 0.0f, false, false};
+
+void savePiLoad() {
+  prefs.begin("ePaper", false);
+  prefs.putFloat("pl_cpu", piload.cpu);
+  prefs.putFloat("pl_ram", piload.ram);
+  prefs.putFloat("pl_temp", piload.temp);
+  prefs.putBool("pl_has", piload.hasTemp);
+  prefs.putBool("pl_valid", piload.valid);
+  prefs.end();
+}
+
+void loadPiLoad() {
+  prefs.begin("ePaper", true);
+  piload.cpu     = prefs.getFloat("pl_cpu", 0.0f);
+  piload.ram     = prefs.getFloat("pl_ram", 0.0f);
+  piload.temp    = prefs.getFloat("pl_temp", 0.0f);
+  piload.hasTemp = prefs.getBool("pl_has", false);
+  piload.valid   = prefs.getBool("pl_valid", false);
+  prefs.end();
+}
 
 void parsePiLoad(JsonVariantConst obj) {
   piload.valid = obj.is<JsonObjectConst>();
@@ -18,6 +41,7 @@ void parsePiLoad(JsonVariantConst obj) {
 
 void drawPiLoad(LayoutItem* item) {
   if (!item) return;
+  loadPiLoad();
 
   if (!piload.valid) {
     int cx = item->PosX + item->Width / 2;

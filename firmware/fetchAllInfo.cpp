@@ -284,6 +284,7 @@ bool fetchData() {
     }
     saveLayout();
     parsePiLoad(doc["piload"]);
+    if (piload.valid) savePiLoad();
     return true;
 }
 

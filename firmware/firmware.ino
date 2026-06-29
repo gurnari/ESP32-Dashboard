@@ -1554,8 +1554,8 @@ void setup() {
   bool bambuIf = (infoBambu && infoBambu->Active && (((isPrinting || previousIsPrinting) && (bootCount % infoBambu->Refresh == 0)) || (bootCount % (infoBambu->Refresh * 2) == 0))) || pendingBambuRetry;
   // Ambiant local (DHT11) — pas de fetch réseau, activation directe selon layout
   bool ambientIf = infoAmbient && infoAmbient->Active;
-  // Charge du Pi — activation directe selon layout
-  bool piloadIf  = infoPiLoad && infoPiLoad->Active;
+  // Charge du Pi — widget réseau : cache en Preferences, redraw quand échu
+  bool piloadIf  = shouldFetchRefresh(infoPiLoad);
 
   // Bring Wi-Fi up only when at least one widget needs fresh data.
   bool needWiFi =
@@ -1593,7 +1593,7 @@ void setup() {
         infoAmbient  = getLayout(2048);
         ambientIf    = infoAmbient && infoAmbient->Active; // recalcul après re-fetch
         infoPiLoad   = getLayout(4096);
-        piloadIf     = infoPiLoad && infoPiLoad->Active;   // recalcul après re-fetch
+        piloadIf     = shouldFetchRefresh(infoPiLoad);   // recalcul après re-fetch
 
         if (fetchOk) {
           eventIf = shouldFetchRefresh(infoEvent);

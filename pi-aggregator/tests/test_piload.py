@@ -78,11 +78,19 @@ def test_piload_absent_gives_none(tmp_path):
 
 def test_aggregator_includes_piload_source_when_configured():
     cfg = Config(layout_file=Path("layout.json"), piload=PiLoadConfig())
-    agg = Aggregator(cfg, client=httpx.AsyncClient())
-    assert any(s.name == "piload" for s in agg.sources)
+    client = httpx.AsyncClient()
+    try:
+        agg = Aggregator(cfg, client=client)
+        assert any(s.name == "piload" for s in agg.sources)
+    finally:
+        asyncio.run(client.aclose())
 
 
 def test_aggregator_omits_piload_source_when_none():
     cfg = Config(layout_file=Path("layout.json"))
-    agg = Aggregator(cfg, client=httpx.AsyncClient())
-    assert not any(s.name == "piload" for s in agg.sources)
+    client = httpx.AsyncClient()
+    try:
+        agg = Aggregator(cfg, client=client)
+        assert not any(s.name == "piload" for s in agg.sources)
+    finally:
+        asyncio.run(client.aclose())

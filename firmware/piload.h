@@ -15,5 +15,9 @@ extern PiLoadData piload;
 // Remplit `piload` depuis doc["piload"] (objet ou null).
 void parsePiLoad(JsonVariantConst obj);
 
+// Persiste / recharge les valeurs en Preferences (cache deep-sleep).
+void savePiLoad();
+void loadPiLoad();
+
 // Dessine le widget (CPU/RAM/temp, ou « Not available »).
 void drawPiLoad(LayoutItem* item);

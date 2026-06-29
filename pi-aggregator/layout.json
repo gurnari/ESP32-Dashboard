@@ -8,5 +8,5 @@
   { "ID": 128, "Description": "Battery",    "Active": true, "PosX": 440, "PosY": 0,   "Width": 360, "Height": 28,  "Row_Height": 0,  "Col_Width": 0,   "Refresh": 60,  "Group": 8, "Extra1": "", "Extra2": "", "Extra3": "", "Extra4": "", "Extra5": "" },
   { "ID": 256, "Description": "Calendar",   "Active": true, "PosX": 440, "PosY": 25,  "Width": 360, "Height": 230, "Row_Height": 28, "Col_Width": 210, "Refresh": 60,  "Group": 9, "Extra1": "", "Extra2": "", "Extra3": "", "Extra4": "", "Extra5": "" },
   { "ID": 2048, "Description": "Ambient",  "Active": true, "PosX": 10,  "PosY": 155, "Width": 430, "Height": 130, "Row_Height": 45, "Col_Width": 0,   "Refresh": 1,   "Group": 1, "Extra1": "", "Extra2": "", "Extra3": "", "Extra4": "", "Extra5": "" },
-  { "ID": 4096, "Description": "PiLoad",   "Active": true, "PosX": 440, "PosY": 255, "Width": 360, "Height": 145, "Row_Height": 40, "Col_Width": 0,   "Refresh": 1,   "Group": 6, "Extra1": "", "Extra2": "", "Extra3": "", "Extra4": "", "Extra5": "" }
+  { "ID": 4096, "Description": "PiLoad",   "Active": true, "PosX": 440, "PosY": 255, "Width": 360, "Height": 145, "Row_Height": 40, "Col_Width": 0,   "Refresh": 15,  "Group": 6, "Extra1": "", "Extra2": "", "Extra3": "", "Extra4": "", "Extra5": "" }
 ]
