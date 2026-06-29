@@ -1,6 +1,7 @@
 #include "app.h"
 #include "configure.h"
 #include "fetchAllInfo.h"
+#include "piload.h"
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <Preferences.h>
@@ -282,6 +283,8 @@ bool fetchData() {
         saveMakerWorld(); 
     }
     saveLayout();
+    parsePiLoad(doc["piload"]);
+    if (piload.valid) savePiLoad();
     return true;
 }
 

@@ -9,6 +9,7 @@
 #include "proxmox.h"
 #include "calendar.h"
 #include "ambient.h"
+#include "piload.h"
 #include <WebServer.h>
 #include <Preferences.h>
 #include <cstring>
@@ -1236,18 +1237,19 @@ void drawDemoScreen() {
   LayoutItem* infoBattery = getLayout(128);
   LayoutItem* infoCalendar = getLayout(256);
   LayoutItem* infoAmbient  = getLayout(2048);
+  LayoutItem* infoPiLoad   = getLayout(4096);
 
   display.firstPage();
   do {
     LayoutItem* items[] = { infoClock, infoEvent, infoStocks, infoOpenMeteo,
                             infoTracking, infoProxMox, infoBambu, infoBattery, infoCalendar,
-                            infoAmbient };
+                            infoAmbient, infoPiLoad };
 
     const char* labels[] = { "Clock", "Event", "Stocks", "Weather",
                              "Tracking", "ProxMox", "Bambu", "Battery", "Calendar",
-                             "Ambient" };
+                             "Ambient", "PiLoad" };
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 11; i++) {
       LayoutItem* item = items[i];
       if (item && item->Active) {
 
@@ -1521,6 +1523,7 @@ void setup() {
   LayoutItem* infoBattery = getLayout(128);
   LayoutItem* infoCalendar = getLayout(256);
   LayoutItem* infoAmbient  = getLayout(2048);
+  LayoutItem* infoPiLoad   = getLayout(4096);
 
   switch (readWakeButtonAction()) {
     case BUTTON_ACTION_AP:
@@ -1551,6 +1554,8 @@ void setup() {
   bool bambuIf = (infoBambu && infoBambu->Active && (((isPrinting || previousIsPrinting) && (bootCount % infoBambu->Refresh == 0)) || (bootCount % (infoBambu->Refresh * 2) == 0))) || pendingBambuRetry;
   // Ambiant local (DHT11) — pas de fetch réseau, activation directe selon layout
   bool ambientIf = infoAmbient && infoAmbient->Active;
+  // Charge du Pi — widget réseau : cache en Preferences, redraw quand échu
+  bool piloadIf  = shouldFetchRefresh(infoPiLoad);
 
   // Bring Wi-Fi up only when at least one widget needs fresh data.
   bool needWiFi =
@@ -1587,6 +1592,8 @@ void setup() {
         infoCalendar = getLayout(256);
         infoAmbient  = getLayout(2048);
         ambientIf    = infoAmbient && infoAmbient->Active; // recalcul après re-fetch
+        infoPiLoad   = getLayout(4096);
+        piloadIf     = shouldFetchRefresh(infoPiLoad);   // recalcul après re-fetch
 
         if (fetchOk) {
           eventIf = shouldFetchRefresh(infoEvent);
@@ -1716,6 +1723,7 @@ void setup() {
       if (trackingIf) trackingWidget(infoTracking);
       if (calendarIf) drawCalendar(infoCalendar);
       if (ambientIf) drawAmbient(infoAmbient);
+      if (piloadIf) drawPiLoad(infoPiLoad);
     } while (display.nextPage());
 
     DBG(F("Finish full"));
@@ -1754,6 +1762,9 @@ void setup() {
 
     if (ambientIf)
       updatePartial(infoAmbient, drawAmbient);
+
+    if (piloadIf)
+      updatePartial(infoPiLoad, drawPiLoad);
 
     if (infoBattery && (batteryIf || forceUpdateStatusBar || apiRetryStreak >= API_RETRY_DISPLAY_THRESHOLD))
       updatePartial(infoBattery, drawStatus);

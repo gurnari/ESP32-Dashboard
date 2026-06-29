@@ -26,3 +26,8 @@ refresh_minutes = 30
 [claude]
 admin_api_key = ""
 refresh_minutes = 60
+
+[piload]
+# Charge du Raspberry Pi (CPU/RAM/température). Lecture locale, aucune clé requise.
+enabled = true
+# refresh_minutes = 1

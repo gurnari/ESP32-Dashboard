@@ -14,6 +14,7 @@ import httpx
 from .config import Config
 from .sources.claude_usage import fetch_claude_usage
 from .sources.layout import load_layout
+from .sources.piload import fetch_piload
 from .sources.tracking import fetch_tracking
 from .sources.weather import fetch_weather
 
@@ -81,6 +82,14 @@ class Aggregator:
                     "claude",
                     lambda: fetch_claude_usage(claude_cfg, client),
                     timedelta(minutes=claude_cfg.refresh_minutes),
+                )
+            )
+        if cfg.piload:
+            self.sources.append(
+                Source(
+                    "piload",
+                    lambda: fetch_piload(),
+                    timedelta(minutes=cfg.piload.refresh_minutes),
                 )
             )
 
