@@ -163,3 +163,11 @@ Sans dépendance (le Pi est Linux ; lecture `/proc` + `/sys`). Fonctions de pars
 - Sur CI Linux, `/proc` existe → si un test intègre la vraie source, `piload`
   apparaîtra ; garder la source **hors** des tests de contrat déterministes (via
   `Config()` sans `[piload]`).
+- **Widget réseau ≠ capteur local** (corrigé en revue finale) : `piload` n'est
+  peuplé que dans `fetchData()`, qui ne tourne pas à chaque réveil. Il faut donc
+  le traiter comme les widgets réseau (météo/tracking/**makerworld**), PAS comme
+  Ambient/DHT11 : **persister en Preferences** après le parse (`savePiLoad()`) et
+  **recharger au rendu** (`loadPiLoad()` en tête de `drawPiLoad`), et gater le
+  redraw avec `shouldFetchRefresh(infoPiLoad)` (pas `Active` direct) avec un
+  `Refresh` raisonnable (15, pas 1). Sinon : « Not available » + scintillement à
+  chaque réveil sans fetch. Ne pas recopier le gabarit d'activation d'Ambient.
