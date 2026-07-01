@@ -344,7 +344,6 @@ Key files:
 - [bambulab.cpp](bambulab.cpp): printer status and MQTT fetch
 - [dash_zigbee.cpp](dash_zigbee.cpp): Zigbee integration
 - [pi-aggregator](../pi-aggregator): Raspberry Pi data source (current)
-- [googleScripts](../googleScripts): legacy Apps Script samples (reference only, no longer used)
 
 ## Licenses and Attribution
 
