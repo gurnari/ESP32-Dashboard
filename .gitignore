@@ -4,7 +4,7 @@
 
 # ---------------------------------------------------------------------------
 #  SECRETS & CONFIG LOCALE  (le plus important — ne JAMAIS committer)
-#  WiFi, clés API (Last.fm, météo), code d'accès Bambu Lab, IP du Pi, etc.
+#  WiFi, clés API (météo, suivi colis), code d'accès Bambu Lab, IP du Pi, etc.
 # ---------------------------------------------------------------------------
 .env
 .env.*

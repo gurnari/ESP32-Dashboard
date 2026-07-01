@@ -7,12 +7,13 @@ sans modifier le firmware.
 
 ## Provenance
 
-Reconstituée depuis le repo (pas de capture réseau de l'Apps Script) :
+Reconstituée depuis l'ancien Apps Script (feuilles CSV + `script.js`), avant sa
+suppression du repo — pas de capture réseau :
 
-- `layout` ← `googleScripts/ESP32Dashboard_Layout.csv` (statique, reproductible tel quel)
-- `stocks` ← `googleScripts/ESP32Dashboard_Stocks.csv` + mapping `getStockInfo()` de `script.js`
-- `tracking` ← forme de `getTrackingInfo()` ; la feuille `ESP32Dashboard_Tracking.csv`
-  est vide (données live PKGE) → valeurs d'exemple
+- `layout` ← feuille `Layout` (statique, reproductible tel quel)
+- `stocks` ← feuille `Stocks` + mapping `getStockInfo()`
+- `tracking` ← forme de `getTrackingInfo()` ; feuille `Tracking` vide
+  (données live PKGE) → valeurs d'exemple
 - `weather` ← forme de `fetchOpenMeteo()` (coords du Layout ID 8 : `44.501,-72.5674`, 4 jours) → exemple
 - `calEvents` ← forme de `getCalendar()` → exemple
 - `makerworld` ← forme de `getMakerWorldStats()` (designId du Layout ID 64) → exemple

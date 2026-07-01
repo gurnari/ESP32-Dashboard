@@ -28,8 +28,8 @@ l'ESP32**, 🔵 servie **par le Pi** dans la requête unique, 🟣 **MQTT direct
 | Bambu Lab (64) | statut imprimante 3D | 🟣 MQTT direct depuis l'ESP |
 | ~~Cal Events~~ (2) | agenda 24 h | ⚫ désactivé (remplacé par Charge du Pi) |
 
-Supprimés : Stocks, MakerWorld, Proxmox, Google Calendar (events), Claude, Zigbee.
-Reporté : Apple Music (Last.fm).
+Supprimés : Stocks, MakerWorld, Proxmox, Google Calendar (events), Claude, Zigbee,
+Apple Music (Last.fm).
 
 Disposition à l'écran (800×480, deux colonnes scindées à x=440) :
 
@@ -61,7 +61,6 @@ sans reflasher l'ESP32.
 | [`firmware/`](firmware/) | Firmware C++/Arduino (XIAO ESP32C6 + e-paper 7,5"). Voir [firmware/README.md](firmware/README.md). |
 | [`pi-aggregator/`](pi-aggregator/) | Agrégateur Python sur le Raspberry Pi : expose `GET /dashboard` au format JSON attendu par le firmware. |
 | [`pi-aggregator/golden/`](pi-aggregator/golden/) | Fixture JSON de référence (contrat à respecter côté Pi). |
-| [`googleScripts/`](googleScripts/) | Ancien Apps Script + CSV — **référence/legacy** ayant servi à reconstituer le contrat JSON. À ne pas réintroduire. |
 
 ## Contrat JSON
 
