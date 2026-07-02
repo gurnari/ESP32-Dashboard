@@ -92,6 +92,14 @@ utilisé dans le code.
 > fils sur les pads 3V3/GND du XIAO (soudure commune ou petite plaque). La conso reste faible :
 > e-paper ≈ quelques dizaines de mA en pic de rafraîchissement, DHT11 quelques mA.
 >
+> Les pads et pins d'un même rail sont **le même réseau électrique** : utiliser un pad ne crée
+> pas d'alim séparée, juste un point de soudure différent.
+> - **Masse du DHT11** : pin `GND` **ou** pad batterie **BAT−** (silk « D8 ») — même net, OK.
+> - **Alim du DHT11** : uniquement la pin **`3V3`** (seule sortie 3,3 V régulée du C6).
+> - ⚠️ **Ne pas** alimenter le DHT11 depuis le pad **BAT+** (silk « D5 ») : c'est la tension
+>   brute de la LiPo (~3,7–4,2 V). Le tirage du DHT11 relie DATA à VCC ; à 4,2 V le niveau haut
+>   de DATA dépasserait la limite d'entrée 3,3 V du GPIO → risque pour la broche.
+>
 > Réglages du HAT : laisser les sélecteurs sur leur position d'usine — **SPI 4 fils**
 > (« Interface Config » sur `0`) ; aucun changement nécessaire pour le 7,5" monochrome.
 
