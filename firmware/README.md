@@ -64,9 +64,16 @@ Important notes:
 
 | ESP Model | CS | DC | RST | BUSY | SCK | MOSI | Display Power | Battery | Demo Button |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| XIAO ESP32C6 (this fork) | `1` | `21` | `22` | `23` | `19` | `18` | not used | `0` | `GPIO_NUM_2` |
 | ESP32-C6 SuperMini | `4` | `20` | `21` | `22` | `7` | `5` | `1` | not used | `GPIO_NUM_2` |
 | ESP32-C6 | `1` | `8` | `14` | `7` | `23` | `22` | `4` | `0` | `GPIO_NUM_2` |
 | ESP32 | `15` | `27` | `26` | `25` | `13` | `14` | `4` | `35` | `GPIO_NUM_33` |
+
+The columns above are GPIO numbers. On the **Waveshare e-Paper Driver HAT** the connector is
+silkscreened `DIN`/`CLK`, not `MOSI`/`SCK`: wire `DIN` → MOSI, `CLK` → SCK, plus `CS`/`DC`/`RST`/`BUSY`
+and `VCC` (3.3 V) / `GND`. The XIAO ESP32C6 wiring (HAT label → XIAO silk) is documented in detail
+in [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md#câblage-xiao-esp32c6--driver-hat), including the
+DHT11 ambient sensor on `D6` (GPIO16).
 
 The board wiring now uses a preset-backed pin map in [configure.h](configure.h). The firmware auto-selects the matching default preset for `ESP32` or `ESP32-C6`, and you can switch presets with `applyPinPreset(...)` or provide a fully custom mapping with `setCustomPinConfig(...)` before the display is initialized.
 

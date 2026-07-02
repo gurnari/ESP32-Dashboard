@@ -55,21 +55,56 @@ contrat HTTP). Tout le reste passe par le Pi.
 ### Câblage XIAO ESP32C6 ↔ Driver HAT
 
 Mapping défini dans le **preset `XiaoEsp32C6`** de [`firmware/configure.h`](../firmware/configure.h)
-(`makePinPreset`). Colonne « Silk » = sérigraphie XIAO, « GPIO » = numéro réel utilisé dans le code.
+(`makePinPreset`). Le Driver HAT expose un **connecteur 8 broches sérigraphié** : on câble
+label pour label vers le XIAO. Colonnes : « Broche HAT » = sérigraphie du connecteur Waveshare
+(**ce qui est imprimé sur la carte**), « Silk XIAO » = sérigraphie du XIAO, « GPIO » = numéro réel
+utilisé dans le code.
+
+| Broche HAT (sérigraphie) | Silk XIAO | GPIO | Champ `PinConfig` | Rôle |
+| ------------------------ | --------- | ---- | ----------------- | ---- |
+| `VCC`  | 3V3 | — | — | alimentation logique du HAT (**3,3 V**, pas 5 V) |
+| `GND`  | GND | — | — | masse commune |
+| `DIN`  | D10 | 18 | `epdMosi` | données SPI (= MOSI) |
+| `CLK`  | D8  | 19 | `epdSck`  | horloge SPI (= SCK) |
+| `CS`   | D1  | 1  | `epdCs`   | chip select |
+| `DC`   | D3  | 21 | `epdDc`   | data/command |
+| `RST`  | D4  | 22 | `epdRst`  | reset |
+| `BUSY` | D5  | 23 | `epdBusy` | occupé (rafraîchissement en cours) |
+
+> ⚠️ **Nomenclature.** Le connecteur du Driver HAT est étiqueté `DIN` et `CLK`, **pas**
+> `MOSI`/`SCK` : `DIN` ↔ MOSI (D10), `CLK` ↔ SCK (D8). Câbler par les labels de la première
+> colonne évite l'ambiguïté.
+>
+> Le panneau e-paper est en **écriture seule** : pas de MISO (D9 reste libre).
+>
+> Réglages du HAT : laisser les sélecteurs sur leur position d'usine — **SPI 4 fils**
+> (« Interface Config » sur `0`) ; aucun changement nécessaire pour le 7,5" monochrome.
+
+Broches locales du XIAO (hors connecteur HAT) :
 
 | Fonction | Silk XIAO | GPIO | Champ `PinConfig` |
 | -------- | --------- | ---- | ----------------- |
-| EPD CS   | D1 | 1  | `epdCs` |
-| EPD DC   | D3 | 21 | `epdDc` |
-| EPD RST  | D4 | 22 | `epdRst` |
-| EPD BUSY | D5 | 23 | `epdBusy` |
-| SPI SCK  | D8 | 19 | `epdSck` |
-| SPI MOSI | D10 | 18 | `epdMosi` |
 | Alim panneau | — | — | `displayPower` = non assigné (HAT alimenté en 3V3) |
 | Mesure batterie | A0 / D0 | 0 | `battery` |
 | Bouton réveil/démo | D2 | 2 | `demoButton` (le réveil deep-sleep du C6 exige GPIO 0-7) |
+| Données DHT11 | D6 | 16 | `dht11` (voir ci-dessous) |
 
-> MISO (D9) n'est pas câblé : le panneau e-paper est en écriture seule.
+### Câblage du capteur DHT11 (ambiant)
+
+Le DHT11 est lu **localement par l'ESP32** (hors contrat JSON). Module 3 broches typique
+(`+` / `OUT` / `-`) :
+
+| Broche DHT11 | Vers XIAO | Note |
+| ------------ | --------- | ---- |
+| `+` / `VCC` | 3V3 | alimentation 3,3 V |
+| `OUT` / `S` / `DATA` | D6 (GPIO16) | ligne de données bit-bang |
+| `-` / `GND` | GND | masse commune |
+
+> Résistance de tirage **4,7 kΩ–10 kΩ entre DATA et VCC** : déjà présente sur la plupart des
+> **modules** 3 broches ; à ajouter si tu utilises le **capteur nu** 4 broches. Le DHT11 est
+> lent (une mesure ≈ toutes les ~1–2 s), ce qui reste compatible avec le refresh épars du
+> dashboard. Sans capteur, définir `USE_DHT11 0` ou laisser `dht11` non assigné : le widget
+> ambiant est simplement omis.
 
 ### Autonomie et deep sleep
 
