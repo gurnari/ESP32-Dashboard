@@ -70,12 +70,35 @@ utilisé dans le code.
 | `DC`   | D3  | 21 | `epdDc`   | data/command |
 | `RST`  | D4  | 22 | `epdRst`  | reset |
 | `BUSY` | D5  | 23 | `epdBusy` | occupé (rafraîchissement en cours) |
+| `PWR`  | 3V3 | — | — | commande d'alim du panneau → **ponter sur VCC** (voir note) |
 
 > ⚠️ **Nomenclature.** Le connecteur du Driver HAT est étiqueté `DIN` et `CLK`, **pas**
 > `MOSI`/`SCK` : `DIN` ↔ MOSI (D10), `CLK` ↔ SCK (D8). Câbler par les labels de la première
 > colonne évite l'ambiguïté.
 >
 > Le panneau e-paper est en **écriture seule** : pas de MISO (D9 reste libre).
+>
+> **`PWR`** (HAT Rev2.3+) n'est pas l'alim directe du panneau mais une **commande** : elle
+> pilote un MOSFET du HAT qui laisse passer (ou coupe) le courant vers l'écran. On la **ponte
+> sur `VCC`** → panneau toujours alimenté, ce qui correspond au preset (`displayPower` non
+> assigné). L'alternative — PWR sur un GPIO libre via `displayPower` — n'apporte rien en
+> l'état : le firmware met cette broche à `HIGH` puis **gèle son état pendant le deep sleep**
+> (`gpio_hold_en`), sans jamais la repasser à `LOW` ; l'économie d'énergie vient de
+> `hibernate()`/`powerOff()`, pas d'une coupure du rail.
+>
+> **Alimentation partagée.** Le XIAO n'a qu'**une broche 3V3 et une GND** : le Driver HAT
+> (`VCC`+`PWR`) et le capteur DHT11 (`+`) tirent tous du **même rail 3V3**, avec une **GND
+> commune** (indispensable : la ligne de données DHT11 se réfère à cette masse). Regrouper les
+> fils sur les pads 3V3/GND du XIAO (soudure commune ou petite plaque). La conso reste faible :
+> e-paper ≈ quelques dizaines de mA en pic de rafraîchissement, DHT11 quelques mA.
+>
+> Les pads et pins d'un même rail sont **le même réseau électrique** : utiliser un pad ne crée
+> pas d'alim séparée, juste un point de soudure différent.
+> - **Masse du DHT11** : pin `GND` **ou** pad batterie **BAT−** (silk « D8 ») — même net, OK.
+> - **Alim du DHT11** : uniquement la pin **`3V3`** (seule sortie 3,3 V régulée du C6).
+> - ⚠️ **Ne pas** alimenter le DHT11 depuis le pad **BAT+** (silk « D5 ») : c'est la tension
+>   brute de la LiPo (~3,7–4,2 V). Le tirage du DHT11 relie DATA à VCC ; à 4,2 V le niveau haut
+>   de DATA dépasserait la limite d'entrée 3,3 V du GPIO → risque pour la broche.
 >
 > Réglages du HAT : laisser les sélecteurs sur leur position d'usine — **SPI 4 fils**
 > (« Interface Config » sur `0`) ; aucun changement nécessaire pour le 7,5" monochrome.
