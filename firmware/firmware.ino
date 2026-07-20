@@ -1169,7 +1169,7 @@ void startAP() {
 
   Serial.println("Start AP");
 
-  bool result = WiFi.softAP("Dashbboard-Setup");
+  bool result = WiFi.softAP("Dashboard-Setup");
 
   if (result) {
     Serial.println("AP started OK");

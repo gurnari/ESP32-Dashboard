@@ -221,7 +221,7 @@ Use address `0x0000` when flashing the merged image.
 After flashing:
 
 1. power on the device
-2. connect to the setup Wi-Fi network: `Dashbboard-Setup`
+2. connect to the setup Wi-Fi network: `Dashboard-Setup`
 3. open `http://192.168.4.1`
 4. fill in the configuration page
 
