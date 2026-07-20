@@ -77,8 +77,17 @@ utilisé dans le code.
 >
 > Le panneau e-paper est en **écriture seule** : pas de MISO (D9 reste libre).
 >
-> Réglages du HAT : laisser les sélecteurs sur leur position d'usine — **SPI 4 fils**
-> (« Interface Config » sur `0`) ; aucun changement nécessaire pour le 7,5" monochrome.
+> ⚠️ **Sélecteurs du HAT — à vérifier, ne pas supposer « d'usine ».** Le Driver HAT porte
+> deux petits interrupteurs de configuration ; pour le 7,5" monochrome ils doivent être sur :
+>
+> - **Display Config** → `A` (résistances adaptées à la plupart des dalles SPI Waveshare) ;
+> - **Interface Config** → `0` (**SPI 4 fils**, ce qu'utilise GxEPD2 ; `1` = SPI 3 fils).
+>
+> Symptôme d'un mauvais réglage : le firmware tourne, le SPI répond et `display.init()`
+> réussit, mais **l'écran ne clignote jamais et reste vide** — le rafraîchissement « se
+> termine » en ~100 ms au lieu des ~4-5 s d'un vrai *full refresh*. Si l'écran reste blanc
+> alors que le firmware s'exécute, **vérifier ces deux switches en premier** (avant de
+> soupçonner le câblage ou la nappe FPC).
 
 Broches locales du XIAO (hors connecteur HAT) :
 
